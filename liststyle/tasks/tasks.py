@@ -14,15 +14,17 @@ from bson.objectid import ObjectId
 from wsgiref.simple_server import make_server
 
 
-logging.basicConfig(filename='tasks2.log', level=logging.DEBUG)
+logging.basicConfig(filename='tasks.log', level=logging.DEBUG)
 logger = logging.getLogger(__file__)
 
 here = os.path.dirname(os.path.abspath(__file__))
 
-#schema: _id: default, name: string, closed = bool
 dbconn = pymongo.Connection()
 db = dbconn['list']
+#schema: _id: default, name: string, closed = bool
 coll = db['tasks']
+#schema: _id: default, name: string, author:string
+playcoll = db['playlists']
 
 # views
 @view_config(route_name='list', renderer='list.mako')
@@ -35,6 +37,16 @@ def list_view(request):
         if not task["closed"]:
             tasklist.append(task)
     return { "tasks" : tasklist }
+
+
+@view_config(route_name='playlists', renderer='playlists.mako')
+def playlists_view(request):
+    logger.info("in playlists view")
+    playlists = []
+    logger.info("finding playlists")
+    for playlist in playcoll.find():
+        playlists.append(playlist)
+    return { "playlists" : playlists }
 
 
 @view_config(route_name='new', renderer='new.mako')
@@ -79,6 +91,7 @@ if __name__ == '__main__':
     config.add_route('list', '/')
     config.add_route('new', '/new')
     config.add_route('close', '/close/{id}')
+    config.add_route('playlists', '/playlists')
     # static view setup
     config.add_static_view('static', os.path.join(here, 'static'))
     # scan for @view_config and @subscriber decorators
