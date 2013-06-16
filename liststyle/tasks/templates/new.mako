@@ -3,7 +3,9 @@
 
 <h1>Add a new task</h1>
 
-<form action="${request.route_url('new')}" method="post">
-  <input type="text" maxlength="100" name="name">
-  <input type="submit" name="add" value="ADD" class="button">
+<form action="${request.route_url('new')}" class="form-inline" method="post">
+  <fieldset>
+    <input type="text" maxlength="100" name="name">
+    <button type="submit" name="add" class="btn">Add</button>
+  </fieldset>
 </form>
