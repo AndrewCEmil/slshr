@@ -25,6 +25,9 @@ db = dbconn['list']
 coll = db['tasks']
 #schema: _id: default, name: string, author:string
 playcoll = db['playlists']
+#schema: _id default, url: string, headline: string, insertts: timestamp
+#thats schema for the playlist where the collection name is the curator
+
 
 # views
 @view_config(route_name='list', renderer='list.mako')
@@ -48,6 +51,18 @@ def playlists_view(request):
         playlists.append(playlist)
     return { "playlists" : playlists }
 
+@view_config(route_name='playlist', renderer='playlist.mako')
+def playlists_view(request):
+    logger.info("in playlist view")
+    articles = []
+    logger.info("finding playlist")
+    playlist_name = request.matchdict['name']
+    playlist_col = db[playlist_name]
+    for article in playlist_col.find():
+        articles.append(article)
+        logger.info(article['headline'])
+    return { "articles" : articles, "name" : playlist_name }
+
 
 @view_config(route_name='new', renderer='new.mako')
 def new_view(request):
@@ -61,6 +76,21 @@ def new_view(request):
         else:
             request.session.flash('Please enter a name for the task!')
     return {}
+
+""" TODO new playslists
+@view_config(route_name='newplaylist', renderer='new.mako')
+def new_view(request):
+    logger.info("in new view")
+    if request.method == 'POST':
+        if request.POST.get('name'):
+            logger.info("inserting")
+            coll.insert({ "name": request.POST.get('name'), "closed": False})
+            request.session.flash('New task was successfully added!')
+            return HTTPFound(location=request.route_url('list'))
+        else:
+            request.session.flash('Please enter a name for the task!')
+    return {}
+"""
 
 @view_config(route_name='close')
 def close_view(request):
@@ -92,6 +122,7 @@ if __name__ == '__main__':
     config.add_route('new', '/new')
     config.add_route('close', '/close/{id}')
     config.add_route('playlists', '/playlists')
+    config.add_route('playlist', '/playlist/{name}')
     # static view setup
     config.add_static_view('static', os.path.join(here, 'static'))
     # scan for @view_config and @subscriber decorators

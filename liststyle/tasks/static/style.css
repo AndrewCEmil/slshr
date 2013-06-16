@@ -68,6 +68,12 @@ input {
   display: inline-block;
 }
 
+#tasks .articles {
+  width: 400px;
+  text-align: left;
+  display: inline-block;
+}
+
 #tasks .actions {
   width: 80px;
   text-align: right;
