@@ -10,6 +10,7 @@
     <span class="name">${playlist['name']}</span>
   </li>
   % endfor
+   <span class="name">${playlists}</span>
 % else:
   <li>There are no playlists</li>
 % endif

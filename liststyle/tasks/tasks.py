@@ -52,7 +52,7 @@ def playlists_view(request):
     return { "playlists" : playlists }
 
 @view_config(route_name='playlist', renderer='playlist.mako')
-def playlists_view(request):
+def playlist_view(request):
     logger.info("in playlist view")
     articles = []
     logger.info("finding playlist")
@@ -120,8 +120,8 @@ if __name__ == '__main__':
     # routes setup
     config.add_route('list', '/')
     config.add_route('new', '/new')
+    config.add_route('playlists', '/people')
     config.add_route('close', '/close/{id}')
-    config.add_route('playlists', '/playlists')
     config.add_route('playlist', '/playlist/{name}')
     # static view setup
     config.add_static_view('static', os.path.join(here, 'static'))
