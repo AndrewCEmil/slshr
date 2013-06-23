@@ -30,7 +30,7 @@ SOURCE: https://pyramid.readthedocs.org/en/latest/narr/install.html#before-you-i
     cd env
     bin/easy_install pyramid
 
-Install mongodb modules
+Install mongodb ish
 
     pip install pymogno
 
@@ -38,3 +38,14 @@ Set up an empty git repo
 
     mkdir slshr.git && slshr.git
     git init --bare
+    
+download mongodb binaries
+
+    wget http://fastdl.mongodb.org/linux/mongodb-linux-i686-2.4.4.tgz
+    tar -xvzf mongodb-linux-i686-2.4.4.tgz 
+    
+Start mongo
+
+    sudo mkdir /data && /data/db
+    sudo bin/mongod --fork --logpath /var/log/mongodb.log
+
