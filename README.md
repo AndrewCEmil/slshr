@@ -1,5 +1,10 @@
 slshr
 =====
+deployment
+first add a new remote
+    git remote add ocean ssh://slshr@192.241.131.152/home/slshr/slshr-app
+then click deploy
+    git push origin ocean
 
 to get started
 
