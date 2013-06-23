@@ -1,5 +1,5 @@
-slshr
-=====
+# slshr
+
 deployment
 Add a remote for our digital ocean server. You should have previously set up your ssh keys with the server
 for the 'slshr' user.
@@ -19,25 +19,18 @@ copy your damn ssh-keys to digital ocean
     cat .ssh/id_rsa.pub | ssh slshr@192.241.131.152 "cat >> ~/.ssh/authorized_keys"
 
 configuring a digital ocean server
-=====
-install python-pip, vim, git, everything you might need.
 
-Install pyramid in a virtual env by following these instructions
+
+## install python-pip, vim, git, everything you might need.
+
+Install pyramid and pymongo in a virtual env by following these instructions
 SOURCE: https://pyramid.readthedocs.org/en/latest/narr/install.html#before-you-install
 
     sudo easy_install virtualenv
-    virtualenv --no-site-packages env
-    cd env
+    virtualenv --no-site-packages ~/env
+    cd ~/env
     bin/easy_install pyramid
-
-Install mongodb ish
-
-    pip install pymogno
-
-Set up an empty git repo
-
-    mkdir slshr.git && slshr.git
-    git init --bare
+    bin/pip install pymongo
     
 download mongodb binaries
 
@@ -47,5 +40,14 @@ download mongodb binaries
 Start mongo
 
     sudo mkdir /data && /data/db
-    sudo bin/mongod --fork --logpath /var/log/mongodb.log
+    sudo <mongodb binary dir>/bin/mongod --fork --logpath /var/log/mongodb.log
 
+Now if you clone the repo, you should be able to run the app assuming the DB is consistent with whatever is in dump.
+
+## TODO: setting up git deployment
+Set up an empty git repo
+
+    mkdir slshr.git && slshr.git
+    git init --bare
+        
+    
