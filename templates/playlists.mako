@@ -7,10 +7,11 @@
 % if playlists:
   % for playlist in playlists:
   <li>
-    <span class="name">${playlist['name']}</span>
+    <span class="name">
+    <a href="/playlist/${playlist['author']}">${playlist['name']}</a>
+    </span>
   </li>
   % endfor
-   <span class="name">${playlists}</span>
 % else:
   <li>There are no playlists</li>
 % endif

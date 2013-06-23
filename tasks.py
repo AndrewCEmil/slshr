@@ -48,6 +48,7 @@ def playlists_view(request):
     playlists = []
     logger.info("finding playlists")
     for playlist in playcoll.find():
+        logger.info(playlist)
         playlists.append(playlist)
     return { "playlists" : playlists }
 
