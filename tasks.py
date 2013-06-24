@@ -10,6 +10,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.view import view_config
 from bson.objectid import ObjectId
+from security import BasicAuthenticationPolicy
 
 from wsgiref.simple_server import make_server
 
@@ -25,9 +26,11 @@ db = dbconn['list']
 coll = db['tasks']
 #schema: _id: default, name: string, author:string
 playcoll = db['playlists']
+#schema: _id: username, hash: string, salt: string, groups: list[string]
+usercoll = db['users']
+
 #schema: _id default, url: string, headline: string, insertts: timestamp
 #thats schema for the playlist where the collection name is the curator
-
 
 # views
 @view_config(route_name='list', renderer='list.mako')
@@ -92,7 +95,6 @@ def new_view(request):
             request.session.flash('Please enter a name for the task!')
     return {}
 """
-
 @view_config(route_name='close')
 def close_view(request):
     logger.info("in close view")
@@ -108,6 +110,30 @@ def notfound_view(request):
     return {}
 
 
+def usercheck(creds, request):
+    return credcheck(creds['login'], creds['password'])
+
+#TODO cred_check:
+def credcheck(login, password):
+    #first lookup in db and validate
+    cursor = usercoll.find({"_id" : login})
+    if cursor.count() == 0:
+        logger.info("looked up " + login + ", found 0 users")
+        return None
+    if cursor.count() > 1:
+        logger.warning("looked up " + login + ", found multiple users!")
+        return None
+    userdoc = cursor[0]
+    #now generate the hash 
+    wp = whirlpool.new(password + userdoc['salt'])
+    passhash = wp.hexdigest()
+    if passhash == userdoc['hash']:
+        return userdoc['groups']
+    else:
+        return None
+
+    
+
 if __name__ == '__main__':
     # configuration settings
     settings = {}
@@ -117,7 +143,8 @@ if __name__ == '__main__':
     # session factory
     session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
     # configuration setup
-    config = Configurator(settings=settings, session_factory=session_factory)
+    config = Configurator(settings=settings, session_factory=session_factory,
+                          authentication_policy=BasicAuthenticationPolicy(usercheck))
     # routes setup
     config.add_route('list', '/')
     config.add_route('new', '/new')
