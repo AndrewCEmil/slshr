@@ -1,6 +1,8 @@
 import os
 import logging
 import pymongo
+import whirlpool
+import datetime
 
 from pyramid.config import Configurator
 from pyramid.events import NewRequest
@@ -15,7 +17,7 @@ from security import BasicAuthenticationPolicy
 from wsgiref.simple_server import make_server
 
 
-logging.basicConfig(filename='tasks.log', level=logging.DEBUG)
+logging.basicConfig(filename=__file__+'.log', level=logging.DEBUG)
 logger = logging.getLogger(__file__)
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -81,20 +83,61 @@ def new_view(request):
             request.session.flash('Please enter a name for the task!')
     return {}
 
-""" TODO new playslists
-@view_config(route_name='newplaylist', renderer='new.mako')
-def new_view(request):
-    logger.info("in new view")
+#TODO how to make this authenticated?
+@view_config(route_name='newuser', renderer='newuser.mako')
+def new_user_view(request):
+    logger.info("in new user view")
     if request.method == 'POST':
-        if request.POST.get('name'):
-            logger.info("inserting")
-            coll.insert({ "name": request.POST.get('name'), "closed": False})
-            request.session.flash('New task was successfully added!')
-            return HTTPFound(location=request.route_url('list'))
+        #validate input
+        username = request.POST.get('username')
+        userpass = request.POST.get('userpass')
+        description = request.POST.get('description')
+        if username is not None and userpass is not None and description is not None:
+            #generate hash
+            salt = gensalt(username)
+            wp = whirlpool.new(userpass + salt)
+            passhash = wp.hexdigest()
+            #insert into db
+            db.usercoll.insert({"_id":username, "hash": passhash, "salt": salt, "groups": ["admin"]})
+            #send user to edit page view
+            #TODO need to make edit page view first
         else:
-            request.session.flash('Please enter a name for the task!')
+            request.session.flash('Please fill out all the fields')
     return {}
-"""
+
+#TODO how to make this authenticated?
+#TODO fill in logic
+@view_config(route_name='editlist', renderer='editlist.mako')
+def edit_list_view(request):
+    logger.info('in edit list view')
+    articles = []
+    authorname = request.matchdict['name']
+    if authorname is None:
+        logger.error("got into editlist without an authorname")
+        print "ZOMG"
+    print authorname
+    playlist_col = db[authorname]
+    for article in playlist_col.find():
+        articles.append(article)
+    if request.method == 'POST':
+        #validate
+        headline = request.POST.get('linkname')
+        url = request.POST.get('url')
+        if headline is not None and url is not None:
+            #generate new article entry
+            ts = datetime.datetime.utcnow()
+            newarticle = {"url" : url, "headline" : headline, "timestamp" : ts}
+            #push link onto list
+            articles.append(newarticle)
+            #add into database
+            playlist_col.insert(newarticle)
+        else:
+            request.session.flash('Please fill in all the fields')
+    #get playlist generate articles list
+    logger.debug("returning from edit list")
+    logger.debug({"name" : authorname, "articles": articles})
+    return {"name" : authorname, "articles": articles}
+
 @view_config(route_name='close')
 def close_view(request):
     logger.info("in close view")
@@ -132,7 +175,9 @@ def credcheck(login, password):
     else:
         return None
 
-    
+#TODO
+def gensalt(usersalt):
+    return "potato"
 
 if __name__ == '__main__':
     # configuration settings
@@ -151,6 +196,8 @@ if __name__ == '__main__':
     config.add_route('playlists', '/people')
     config.add_route('close', '/close/{id}')
     config.add_route('playlist', '/playlist/{name}')
+    config.add_route('newuser', '/newuser')
+    config.add_route('editlist', '/playlist/{name}/edit')
     # static view setup
     config.add_static_view('static', os.path.join(here, 'static'))
     # scan for @view_config and @subscriber decorators
