@@ -138,6 +138,31 @@ def edit_list_view(request):
     logger.debug({"name" : authorname, "articles": articles})
     return {"name" : authorname, "articles": articles}
 
+#TODO add to authentication
+@view_config(route_name='login', renderer='login.mako')
+def login_view(request):
+    logger.info('in login view')
+    #get login info
+    if request.method == 'POST':
+        #validate input
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        if username is not None and password is not None:
+            #check authentication
+            check = credcheck(username, password)
+            print check
+            if check is not None:
+                #redirect to edit page
+                playlistinfo = playcoll.find({'author' : username})[0]
+                playlistname = playlistinfo['name']
+                return HTTPFound(location=request.route_url('editlist', name=playlistname))
+            else:
+                #fail and flash retry
+                request.session.flash('Please enter valid credentials')
+        else:
+            request.session.flash('Please fill in all the fields')
+    return {}
+
 @view_config(route_name='close')
 def close_view(request):
     logger.info("in close view")
@@ -198,6 +223,7 @@ if __name__ == '__main__':
     config.add_route('playlist', '/playlist/{name}')
     config.add_route('newuser', '/newuser')
     config.add_route('editlist', '/playlist/{name}/edit')
+    config.add_route('login', '/login')
     # static view setup
     config.add_static_view('static', os.path.join(here, 'static'))
     # scan for @view_config and @subscriber decorators
