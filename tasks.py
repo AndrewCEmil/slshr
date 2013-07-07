@@ -100,7 +100,7 @@ def new_user_view(request):
             #insert into db
             db.usercoll.insert({"_id":username, "hash": passhash, "salt": salt, "groups": ["admin"]})
             #send user to edit page view
-            #TODO need to make edit page view first
+            return HTTPFound(location=request.route_url('editlist', name=username))
         else:
             request.session.flash('Please fill out all the fields')
     return {}
