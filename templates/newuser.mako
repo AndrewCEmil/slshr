@@ -7,7 +7,7 @@
   <fieldset>
     <p>User Name: <input type="text" maxlength="100" name="username"></p>
     <p>Password: <input type="text" maxlength="100" name="userpass"></p>
-    <p>Description: <input type="text" maxlength="120" name="description"></p>
+    <p>Listname: <input type="text" maxlength="120" name="listname"></p>
     <button type="submit" name="add" class="btn">Add</button>
   </fieldset>
 </form>

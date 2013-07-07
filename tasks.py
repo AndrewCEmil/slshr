@@ -91,14 +91,15 @@ def new_user_view(request):
         #validate input
         username = request.POST.get('username')
         userpass = request.POST.get('userpass')
-        description = request.POST.get('description')
-        if username is not None and userpass is not None and description is not None:
+        listname = request.POST.get('listname')
+        if username is not None and userpass is not None and listname is not None:
             #generate hash
             salt = gensalt(username)
             wp = whirlpool.new(userpass + salt)
             passhash = wp.hexdigest()
             #insert into db
-            db.usercoll.insert({"_id":username, "hash": passhash, "salt": salt, "groups": ["admin"]})
+            usercoll.insert({"_id": username, "hash": passhash, "salt": salt, "groups": ["admin"]})
+            playcoll.insert({'name' : listname, 'author' : username})
             #send user to edit page view
             return HTTPFound(location=request.route_url('editlist', name=username))
         else:
@@ -106,7 +107,6 @@ def new_user_view(request):
     return {}
 
 #TODO how to make this authenticated?
-#TODO fill in logic
 @view_config(route_name='editlist', renderer='editlist.mako')
 def edit_list_view(request):
     logger.info('in edit list view')
