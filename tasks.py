@@ -94,8 +94,8 @@ def new_user_view(request):
         listname = request.POST.get('listname')
         if username is not None and userpass is not None and listname is not None:
             #generate hash
-            salt = gensalt(username)
-            wp = whirlpool.new(userpass + salt)
+            salt = gensalt()
+            wp = whirlpool.new("" + userpass + salt)
             passhash = wp.hexdigest()
             #insert into db
             usercoll.insert({"_id": username, "hash": passhash, "salt": salt, "groups": ["admin"]})
@@ -193,16 +193,15 @@ def credcheck(login, password):
         return None
     userdoc = cursor[0]
     #now generate the hash 
-    wp = whirlpool.new(password + userdoc['salt'])
+    wp = whirlpool.new("" + password + userdoc['salt'])
     passhash = wp.hexdigest()
     if passhash == userdoc['hash']:
         return userdoc['groups']
     else:
         return None
 
-#TODO
-def gensalt(usersalt):
-    return "potato"
+def gensalt():
+    return os.urandom(512).encode('base64')#length of the hash output i think...
 
 if __name__ == '__main__':
     # configuration settings
