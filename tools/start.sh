@@ -1,4 +1,5 @@
 #!/bin/sh
-kill $(ps aux | grep 'slshr/app/tasks.py$' | awk '{print $2}')
+kill -TERM $(cat tasks.pid)
 echo 'Starting tasks server'
 nohup ~/env/bin/python ~/app/tasks.py &
+echo $! > tasks.pid
