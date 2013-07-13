@@ -88,20 +88,26 @@ def new_view(request):
 def new_user_view(request):
     logger.info("in new user view")
     if request.method == 'POST':
-        #validate input
+        #validate authentication 
         username = request.POST.get('username')
         userpass = request.POST.get('userpass')
+        if not credcheck(username, userpass):
+            request.session.flash('Authentication failed')
+            return {}
+        #validate input
+        newusername = request.POST.get('newusername')
+        newuserpass = request.POST.get('newuserpass')
         listname = request.POST.get('listname')
-        if username is not None and userpass is not None and listname is not None:
+        if newusername is not None and newuserpass is not None and listname is not None:
             #generate hash
             salt = gensalt()
-            wp = whirlpool.new("" + userpass + salt)
+            wp = whirlpool.new("" + newuserpass + salt)
             passhash = wp.hexdigest()
             #insert into db
-            usercoll.insert({"_id": username, "hash": passhash, "salt": salt, "groups": ["admin"]})
-            playcoll.insert({'name' : listname, 'author' : username})
+            usercoll.insert({"_id": newusername, "hash": passhash, "salt": salt, "groups": ["admin"]})
+            playcoll.insert({'name' : listname, 'author' : newusername})
             #send user to edit page view
-            return HTTPFound(location=request.route_url('editlist', name=username))
+            return HTTPFound(location=request.route_url('editlist', name=newusername))
         else:
             request.session.flash('Please fill out all the fields')
     return {}
