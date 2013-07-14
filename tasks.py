@@ -121,11 +121,17 @@ def edit_list_view(request):
     if authorname is None:
         logger.error("got into editlist without an authorname")
         print "ZOMG"
-    print authorname
+        return {}
     playlist_col = db[authorname]
     for article in playlist_col.find():
         articles.append(article)
     if request.method == 'POST':
+        #authorize
+        username = request.POST.get('username')
+        userpass = request.POST.get('userpass')
+        if username != authorname or not credcheck(username, userpass):
+            request.session.flash('Authentication failed')
+            return {"name" : authorname, "articles" : articles}
         #validate
         headline = request.POST.get('linkname')
         url = request.POST.get('url')

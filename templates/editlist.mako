@@ -7,6 +7,8 @@
     <fieldset>
         <p>Headline: <input type="text" maxlength="100" name="linkname"></p>
         <p>URL: <input type="text" maxlength="1000" name="url"></p>
+        <p>User Name: <input type="text" maxlength="100" name="username"></p>
+        <p>Password: <input type="text" maxlength="100" name="userpass"></p>
         <button type="submit" name="add" class="btn">Add</button>
     </fieldset>
 </form>
