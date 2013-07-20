@@ -226,31 +226,3 @@ def credcheck(login, password):
 def gensalt():
     return os.urandom(512).encode('base64')#length of the hash output i think...
 
-if __name__ == '__main__':
-    # configuration settings
-    settings = {}
-    settings['reload_all'] = True
-    settings['debug_all'] = True
-    settings['mako.directories'] = os.path.join(here, 'templates')
-    # session factory
-    session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
-    # configuration setup
-    config = Configurator(settings=settings, session_factory=session_factory,
-                          authentication_policy=BasicAuthenticationPolicy(usercheck))
-    # routes setup
-    config.add_route('home', '/')
-    config.add_route('new', '/new')
-    config.add_route('playlists', '/people')
-    config.add_route('close', '/close/{id}')
-    config.add_route('playlist', '/playlist/{name}')
-    config.add_route('newuser', '/newuser')
-    config.add_route('editlist', '/playlist/{name}/edit')
-    config.add_route('login', '/login')
-    # static view setup
-    config.add_static_view('static', os.path.join(here, 'static'))
-    # scan for @view_config and @subscriber decorators
-    config.scan()
-    # serve app
-    app = config.make_wsgi_app()
-    server = make_server('0.0.0.0', 8080, app)
-    server.serve_forever()
