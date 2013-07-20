@@ -35,6 +35,7 @@ usercoll = db['users']
 #thats schema for the playlist where the collection name is the curator
 
 # views
+"""
 @view_config(route_name='list', renderer='list.mako')
 def list_view(request):
     logger.info("in list view")
@@ -45,7 +46,15 @@ def list_view(request):
         if not task["closed"]:
             tasklist.append(task)
     return { "tasks" : tasklist }
+""" 
 
+@view_config(route_name='home')
+def home_view(request):
+    logger.info('in home view')
+    #TODO select a random playlist
+    #for now redirect to playlists
+    return HTTPFound(location=request.route_url('playlists'))
+    
 
 @view_config(route_name='playlists', renderer='playlists.mako')
 def playlists_view(request):
@@ -70,6 +79,7 @@ def playlist_view(request):
     return { "articles" : articles, "name" : playlist_name }
 
 
+"""
 @view_config(route_name='new', renderer='new.mako')
 def new_view(request):
     logger.info("in new view")
@@ -82,6 +92,7 @@ def new_view(request):
         else:
             request.session.flash('Please enter a name for the task!')
     return {}
+"""
 
 #TODO how to make this authenticated?
 @view_config(route_name='newuser', renderer='newuser.mako')
@@ -227,7 +238,7 @@ if __name__ == '__main__':
     config = Configurator(settings=settings, session_factory=session_factory,
                           authentication_policy=BasicAuthenticationPolicy(usercheck))
     # routes setup
-    config.add_route('list', '/')
+    config.add_route('home', '/')
     config.add_route('new', '/new')
     config.add_route('playlists', '/people')
     config.add_route('close', '/close/{id}')

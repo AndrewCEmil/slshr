@@ -15,12 +15,7 @@
     <div class="navbar navbar-inverse">
       <div class="navbar-inner">
         <div class="container">
-            <a class="brand" href="#">22 Links</a>
-            <ul class="nav">
-              <li class=""><a href="${request.route_url('list')}">Home</a></li>
-              <li class=""><a href="${request.route_url('playlists')}">Playlists</a></li>
-              <li class=""><a href="${request.route_url('new')}">New</a></li>
-            </ul>
+            <a class="brand" href="">22 Links</a>
         </div>
       </div>  
   </header>    
