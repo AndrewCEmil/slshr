@@ -12,7 +12,11 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.view import view_config
 from bson.objectid import ObjectId
-from security import BasicAuthenticationPolicy
+from pyramid.security import (
+        authenticated_userid,
+        remember,
+        forget,
+        )
 
 from wsgiref.simple_server import make_server
 
@@ -123,11 +127,40 @@ def new_user_view(request):
             request.session.flash('Please fill out all the fields')
     return {}
 
+@view_config(route_name='edit', renderer="edit.mako")
+def edit_view(request):
+    logger.info('in edit view')
+    username = authenticated_userid(request)
+    if username is None:
+        return HTTPFound(location=request.route_url('login'))    
+    playlist_col = db[username]
+    
+    articles = []
+    for article in playlist_col.find():
+        articles.append(article)
+
+    if request.method == 'POST':
+        headline = reqeust.POST.get('linkname')
+        url = request.POST.get('url')
+        if headline is None or url is None:
+            request.session.flash('Please fill out all the fields')
+        else:
+            ts = datetime.datetime.utcnow()
+            newarticle = {'url': url, 'headline': headline, 'timestamp': ts}
+            articles.append(newarticle)
+            playlist_col.insert(newarticle)
+    logger.debug('returning from edit')
+    return {'name': username, 'articles': articles}
+
 #TODO how to make this authenticated?
 @view_config(route_name='editlist', renderer='editlist.mako')
 def edit_list_view(request):
     logger.info('in edit list view')
     articles = []
+    username = authenticated_userid(request)
+    if username:
+        print username
+        print "WIN"
     authorname = request.matchdict['name']
     if authorname is None:
         logger.error("got into editlist without an authorname")
@@ -173,12 +206,12 @@ def login_view(request):
         if username is not None and password is not None:
             #check authentication
             check = credcheck(username, password)
-            print check
-            if check is not None:
+            if check is True:
                 #redirect to edit page
+                headers = remember(request, username)
                 playlistinfo = playcoll.find({'author' : username})[0]
                 playlistname = playlistinfo['name']
-                return HTTPFound(location=request.route_url('editlist', name=playlistname))
+                return HTTPFound(location=request.route_url('edit'), headers=headers)
             else:
                 #fail and flash retry
                 request.session.flash('Please enter valid credentials')
@@ -204,24 +237,22 @@ def notfound_view(request):
 def usercheck(creds, request):
     return credcheck(creds['login'], creds['password'])
 
-#TODO cred_check:
 def credcheck(login, password):
     #first lookup in db and validate
     cursor = usercoll.find({"_id" : login})
     if cursor.count() == 0:
         logger.info("looked up " + login + ", found 0 users")
-        return None
+        return False
     if cursor.count() > 1:
         logger.warning("looked up " + login + ", found multiple users!")
-        return None
+        return False
     userdoc = cursor[0]
     #now generate the hash 
     wp = whirlpool.new("" + password + userdoc['salt'])
     passhash = wp.hexdigest()
     if passhash == userdoc['hash']:
-        return userdoc['groups']
-    else:
-        return None
+        return True 
+    return False
 
 def gensalt():
     return os.urandom(512).encode('base64')#length of the hash output i think...

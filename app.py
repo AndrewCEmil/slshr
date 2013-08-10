@@ -12,7 +12,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.view import view_config
 from bson.objectid import ObjectId
-from security import BasicAuthenticationPolicy
+from pyramid.authentication import SessionAuthenticationPolicy
 
 from wsgiref.simple_server import make_server
 from tasks import usercheck
@@ -27,8 +27,9 @@ def main():
     logger.info("inside main, starting up")
     settings = get_settings()
     session_factory = get_session_factory()
+    authn_policy = SessionAuthenticationPolicy()
     config = Configurator(settings=settings, session_factory=session_factory,
-                          authentication_policy=BasicAuthenticationPolicy(usercheck))
+                          authentication_policy=authn_policy)
     add_routes(config)
     config.scan(package="tasks")
     app = config.make_wsgi_app()
@@ -58,6 +59,7 @@ def add_routes(config):
     config.add_route('playlist', '/playlist/{name}')
     config.add_route('newuser', '/newuser')
     config.add_route('editlist', '/playlist/{name}/edit')
+    config.add_route('edit', '/edit')
     config.add_route('login', '/login')
     config.add_static_view('static', os.path.join(here, 'static'))
     

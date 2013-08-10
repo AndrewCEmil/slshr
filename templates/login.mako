@@ -5,6 +5,7 @@
 
 <form action="${request.route_url('login')}" class="form-inline" method="post">
   <fieldset>
+    <input name="_csrf" type="hidden" value="${request.session.get_csrf_token()}">
     <p>Username: <input type="text" maxlength="100" name="username"></p>
     <p>Password: <input type="text" maxlength="100" name="password"></p>
     <button type="submit" name="add" class="btn">Add</button>
