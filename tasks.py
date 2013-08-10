@@ -152,7 +152,7 @@ def edit_view(request):
     logger.debug('returning from edit')
     return {'name': username, 'articles': articles}
 
-#TODO how to make this authenticated?
+"""
 @view_config(route_name='editlist', renderer='editlist.mako')
 def edit_list_view(request):
     logger.info('in edit list view')
@@ -193,6 +193,7 @@ def edit_list_view(request):
     logger.debug("returning from edit list")
     logger.debug({"name" : authorname, "articles": articles})
     return {"name" : authorname, "articles": articles}
+"""
 
 #TODO add to authentication
 @view_config(route_name='login', renderer='login.mako')
@@ -219,6 +220,7 @@ def login_view(request):
             request.session.flash('Please fill in all the fields')
     return {}
 
+"""
 @view_config(route_name='close')
 def close_view(request):
     logger.info("in close view")
@@ -226,6 +228,7 @@ def close_view(request):
     coll.update({"_id" : task_id}, { '$set' : { "closed" : True } })
     request.session.flash('task was closed!')
     return HTTPFound(location=request.route_url('list'))
+"""
 
 
 @view_config(context='pyramid.exceptions.NotFound', renderer='notfound.mako')

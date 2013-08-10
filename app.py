@@ -53,12 +53,12 @@ def get_session_factory():
 #note: includes static view setup
 def add_routes(config):
     config.add_route('home', '/')
-    config.add_route('new', '/new')
+    #config.add_route('new', '/new')
     config.add_route('playlists', '/people')
-    config.add_route('close', '/close/{id}')
+    #config.add_route('close', '/close/{id}')
     config.add_route('playlist', '/playlist/{name}')
     config.add_route('newuser', '/newuser')
-    config.add_route('editlist', '/playlist/{name}/edit')
+    #config.add_route('editlist', '/playlist/{name}/edit')
     config.add_route('edit', '/edit')
     config.add_route('login', '/login')
     config.add_static_view('static', os.path.join(here, 'static'))
