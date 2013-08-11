@@ -31,11 +31,13 @@ db = dbconn['list']
 coll = db['tasks']
 #schema: _id: default, author:string
 playcoll = db['playlists']
-#schema: _id: username, hash: string, salt: string, groups: list[string]
+#schema: _id: username, hash: string, salt: string
 usercoll = db['users']
-
 #schema: _id default, url: string, headline: string, insertts: timestamp
 #thats schema for the playlist where the collection name is the curator
+#schema: _id: username, followts = timestamp followers = [{ username: username, followts: timestamp }]
+followcoll = db['followers']
+
 
 # views
 
@@ -117,6 +119,48 @@ def edit_view(request):
             playlist_col.insert(newarticle)
     logger.debug('returning from edit')
     return {'name': username, 'articles': articles}
+
+"""
+@view_config(route_name='follow', renderer='follow.mako')
+def follow():
+    username = authenticated_userid(request)
+    if username is None:
+        #TODO generic follow page
+    if request.method != "POST":
+        #return follow.mako
+        #TODO
+"""
+
+
+#this is the post-only endpoint that should not be linked to, but used for sending data to
+@view_config(route_name="followreq", request_method='POST')
+def follow_request(request):
+    logger.info('got a follow request')
+    username = authenticated_userid(request)
+    if username is None:
+        logger.warning("got a request to follow without a username")
+        request.session.flash("need to be logged in to follow")
+        return
+
+    followee = request.POST.get('followee')
+    if followee is None:
+        logger.warning("got a request to follow but no followee")
+        request.session.flash("need to follow a user lol")
+        return
+
+    #first verify that this is a user we are following
+    if usercoll.find({_id : followee}).count() == 0:
+        #not a real user to follow
+        logger.warning(username + " just tried to follow " + followee + " but not found")
+        request.session.flash("found no users named " + followee)
+        return
+    if usercoll.find({'_id' : followee}).count() > 1:
+        #BADBADBAD
+        logger.error("multiple users in usercoll with name " + followee)
+        return
+    
+    #find the followcoll document
+        
 
 @view_config(route_name='login', renderer='login.mako') 
 def login_view(request): 
