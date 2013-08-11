@@ -20,7 +20,6 @@ from pyramid.security import (
 
 from wsgiref.simple_server import make_server
 
-
 logging.basicConfig(filename=__file__+'.log', level=logging.DEBUG)
 logger = logging.getLogger(__file__)
 
@@ -39,18 +38,6 @@ usercoll = db['users']
 #thats schema for the playlist where the collection name is the curator
 
 # views
-"""
-@view_config(route_name='list', renderer='list.mako')
-def list_view(request):
-    logger.info("in list view")
-    tasklist = []
-    logger.info(coll.find().count())
-    logger.info("finding tasks")
-    for task in coll.find():
-        if not task["closed"]:
-            tasklist.append(task)
-    return { "tasks" : tasklist }
-""" 
 
 @view_config(route_name='home')
 def home_view(request):
@@ -81,22 +68,6 @@ def playlist_view(request):
         articles.append(article)
         logger.info(article['headline'])
     return { "articles" : articles, "name" : playlist_name }
-
-
-"""
-@view_config(route_name='new', renderer='new.mako')
-def new_view(request):
-    logger.info("in new view")
-    if request.method == 'POST':
-        if request.POST.get('name'):
-            logger.info("inserting")
-            coll.insert({ "name": request.POST.get('name'), "closed": False})
-            request.session.flash('New task was successfully added!')
-            return HTTPFound(location=request.route_url('list'))
-        else:
-            request.session.flash('Please enter a name for the task!')
-    return {}
-"""
 
 @view_config(route_name='newuser', renderer='newuser.mako')
 def new_user_view(request):
@@ -147,49 +118,6 @@ def edit_view(request):
     logger.debug('returning from edit')
     return {'name': username, 'articles': articles}
 
-"""
-@view_config(route_name='editlist', renderer='editlist.mako')
-def edit_list_view(request):
-    logger.info('in edit list view')
-    articles = []
-    username = authenticated_userid(request)
-    if username:
-        print username
-        print "WIN"
-    authorname = request.matchdict['name']
-    if authorname is None:
-        logger.error("got into editlist without an authorname")
-        print "ZOMG"
-        return {}
-    playlist_col = db[authorname]
-    for article in playlist_col.find():
-        articles.append(article)
-    if request.method == 'POST':
-        #authorize
-        username = request.POST.get('username')
-        userpass = request.POST.get('userpass')
-        if username != authorname or not credcheck(username, userpass):
-            request.session.flash('Authentication failed')
-            return {"name" : authorname, "articles" : articles}
-        #validate
-        headline = request.POST.get('linkname')
-        url = request.POST.get('url')
-        if headline is not None and url is not None:
-            #generate new article entry
-            ts = datetime.datetime.utcnow()
-            newarticle = {"url" : url, "headline" : headline, "timestamp" : ts}
-            #push link onto list
-            articles.append(newarticle)
-            #add into database
-            playlist_col.insert(newarticle)
-        else:
-            request.session.flash('Please fill in all the fields')
-    #get playlist generate articles list
-    logger.debug("returning from edit list")
-    logger.debug({"name" : authorname, "articles": articles})
-    return {"name" : authorname, "articles": articles}
-"""
-#TODO add to authentication 
 @view_config(route_name='login', renderer='login.mako') 
 def login_view(request): 
     logger.info('in login view') 
@@ -204,8 +132,6 @@ def login_view(request):
             if check is True:
                 #redirect to edit page
                 headers = remember(request, username)
-                playlistinfo = playcoll.find({'author' : username})[0]
-                playlistname = playlistinfo['name']
                 return HTTPFound(location=request.route_url('edit'), headers=headers)
             else:
                 #fail and flash retry
@@ -213,17 +139,6 @@ def login_view(request):
         else:
             request.session.flash('Please fill in all the fields')
     return {}
-
-"""
-@view_config(route_name='close')
-def close_view(request):
-    logger.info("in close view")
-    task_id = ObjectId(request.matchdict['id'])
-    coll.update({"_id" : task_id}, { '$set' : { "closed" : True } })
-    request.session.flash('task was closed!')
-    return HTTPFound(location=request.route_url('list'))
-"""
-
 
 @view_config(context='pyramid.exceptions.NotFound', renderer='notfound.mako')
 def notfound_view(request):
