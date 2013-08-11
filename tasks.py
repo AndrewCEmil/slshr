@@ -30,7 +30,7 @@ dbconn = pymongo.Connection()
 db = dbconn['list']
 #schema: _id: default, name: string, closed = bool
 coll = db['tasks']
-#schema: _id: default, name: string, author:string
+#schema: _id: default, author:string
 playcoll = db['playlists']
 #schema: _id: username, hash: string, salt: string, groups: list[string]
 usercoll = db['users']
@@ -98,17 +98,13 @@ def new_view(request):
     return {}
 """
 
-#TODO how to make this authenticated?
 @view_config(route_name='newuser', renderer='newuser.mako')
 def new_user_view(request):
     logger.info("in new user view")
+    username = authenticated_userid(requests)
+    if username != "ace":
+        return notfound_view(request)
     if request.method == 'POST':
-        #validate authentication 
-        username = request.POST.get('username')
-        userpass = request.POST.get('userpass')
-        if not credcheck(username, userpass):
-            request.session.flash('Authentication failed')
-            return {}
         #validate input
         newusername = request.POST.get('newusername')
         newuserpass = request.POST.get('newuserpass')
@@ -121,8 +117,7 @@ def new_user_view(request):
             #insert into db
             usercoll.insert({"_id": newusername, "hash": passhash, "salt": salt, "groups": ["admin"]})
             playcoll.insert({'name' : listname, 'author' : newusername})
-            #send user to edit page view
-            return HTTPFound(location=request.route_url('editlist', name=newusername))
+            request.session.flash("user created")
         else:
             request.session.flash('Please fill out all the fields')
     return {}
@@ -194,12 +189,11 @@ def edit_list_view(request):
     logger.debug({"name" : authorname, "articles": articles})
     return {"name" : authorname, "articles": articles}
 """
-
-#TODO add to authentication
-@view_config(route_name='login', renderer='login.mako')
-def login_view(request):
-    logger.info('in login view')
-    #get login info
+#TODO add to authentication 
+@view_config(route_name='login', renderer='login.mako') 
+def login_view(request): 
+    logger.info('in login view') 
+    #get login info 
     if request.method == 'POST':
         #validate input
         username = request.POST.get('username')
