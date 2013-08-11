@@ -15,7 +15,12 @@
     <div class="navbar navbar-inverse">
       <div class="navbar-inner">
         <div class="container">
-            <a class="brand" href="">22 Links</a>
+            <a class="brand" href="/">22 Links</a>
+            <ul class="nav pull-right">
+              <li class="active">
+                <a href="/login">login</a>
+              </li>
+            </ul>
         </div>
       </div>  
   </header>    
