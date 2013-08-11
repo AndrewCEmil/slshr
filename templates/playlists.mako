@@ -8,7 +8,7 @@
   % for playlist in playlists:
   <li>
     <span class="name">
-    <a href="/playlist/${playlist['author']}">${playlist['name']}</a>
+    <a href="/playlist/${playlist['author']}">${playlist['author']}</a>
     </span>
   </li>
   % endfor
