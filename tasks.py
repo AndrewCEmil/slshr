@@ -20,7 +20,7 @@ from pyramid.security import (
 
 from wsgiref.simple_server import make_server
 
-logging.basicConfig(filename=__file__+'.log', level=logging.DEBUG)
+logging.basicConfig(filename="tasks.py"+'.log', level=logging.DEBUG)
 logger = logging.getLogger(__file__)
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -140,27 +140,57 @@ def follow_request(request):
     if username is None:
         logger.warning("got a request to follow without a username")
         request.session.flash("need to be logged in to follow")
-        return
+        return HTTPFound(location=request.current_route_url())
 
     followee = request.POST.get('followee')
     if followee is None:
         logger.warning("got a request to follow but no followee")
         request.session.flash("need to follow a user lol")
-        return
+        return HTTPFound(location=request.current_route_url())
 
     #first verify that this is a user we are following
-    if usercoll.find({_id : followee}).count() == 0:
+    if usercoll.find({"_id" : followee}).count() == 0:
         #not a real user to follow
         logger.warning(username + " just tried to follow " + followee + " but not found")
         request.session.flash("found no users named " + followee)
-        return
+        return HTTPFound(location=request.current_route_url())
     if usercoll.find({'_id' : followee}).count() > 1:
         #BADBADBAD
         logger.error("multiple users in usercoll with name " + followee)
-        return
+        return HTTPFound(location=request.current_route_url())
     
-    #find the followcoll document
+    #find the followcoll document to update
+    fcount = followcoll.find({'_id': followee}).count() 
+    ts = datetime.datetime.utcnow()
+    if fcount > 1:
+        #BADBADBAD
+        logger.error("mutliple users in followcoll with name " + followee)
+        return HTTPFound(location=request.current_route_url())
+    elif fcount == 1:
+        followcoll.update({'_id': followee},{"$push" : { "followers": { "username": username, "followts": ts}}})
+    elif fcount == 0:
+        #need to create follower index for 
+        #TODO remove and add at user creation time 
+        followcoll.insert({'_id': followee, 'followers': [ { "username": username, "followts": ts}]})
         
+    #and done!
+    return HTTPFound(location=request.current_route_url())
+
+@view_config(route_name='followers', renderer='followers.mako')
+def followers_view(request):
+    logger.info("in followers view")
+    username = request.matchdict['followee']
+    count = followcoll.find({'_id': username}).count()
+    if count == 0:
+        #empty return TODO
+        followers =[]
+    elif count == 1:
+        followers = followcoll.find({'_id':username})[0]['followers']
+    else:
+        logger.error('got more than one use in followcoll in followers_view')
+        followers = []
+    return {'followers': followers}
+
 
 @view_config(route_name='login', renderer='login.mako') 
 def login_view(request): 

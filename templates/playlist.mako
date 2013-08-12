@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*- 
 <%inherit file="layout.mako"/>
+<script>
+function postfollow() {
+    $.post('/follow', 
+    { 'followee': "${name}" },
+    function(data) {
+        alert(data);
+    })
+}
+</script>
 
 <h1>${name}'s List</h1>
 
@@ -16,4 +25,5 @@
   <li>There are no articles</li>
 % endif
 </ul>
+<button onclick="postfollow()">Follow</button>
 

@@ -58,6 +58,8 @@ def add_routes(config):
     config.add_route('newuser', '/newuser')
     config.add_route('edit', '/edit')
     config.add_route('login', '/login')
+    config.add_route('followers', '/followers/{followee}')
+    config.add_route('followreq', '/follow')
     config.add_static_view('static', os.path.join(here, 'static'))
     
 if __name__ == '__main__':
