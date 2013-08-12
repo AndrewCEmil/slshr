@@ -167,12 +167,14 @@ def follow_request(request):
         logger.error("mutliple users in followcoll with name " + followee)
         return HTTPFound(location=request.current_route_url())
     elif fcount == 1:
-        followcoll.update({'_id': followee},{"$push" : { "followers": { "username": username, "followts": ts}}})
+        followdoc = followcoll.find({'_id': followee})
+        for follower in followdoc[0]['followers']:
+            if follower['username'] != username:
+                followcoll.update({'_id': followee},{"$addToSet" : { "followers": { "username": username, "followts": ts}}})
     elif fcount == 0:
         #need to create follower index for 
         #TODO remove and add at user creation time 
         followcoll.insert({'_id': followee, 'followers': [ { "username": username, "followts": ts}]})
-        
     #and done!
     return HTTPFound(location=request.current_route_url())
 

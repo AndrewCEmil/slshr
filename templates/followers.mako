@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 <%inherit file="layout.mako"/>
 
-<h1>PlayLists</h1>
+<h1>Followers</h1>
 
 <ul id="playlists">
 % if followers:
