@@ -35,8 +35,10 @@ playcoll = db['playlists']
 usercoll = db['users']
 #schema: _id default, url: string, headline: string, insertts: timestamp
 #thats schema for the playlist where the collection name is the curator
-#schema: _id: username, followts = timestamp followers = [{ username: username, followts: timestamp }]
+#schema: _id: username, followts = timestamp followers = [{ username: username, followts: timestamp }] #TODO check this schema
 followcoll = db['followers']
+#schema: _id: username, following = [{ username: username, followts: timestamp }]
+followingcol = db['following']
 
 
 # views
@@ -161,20 +163,33 @@ def follow_request(request):
     
     #find the followcoll document to update
     fcount = followcoll.find({'_id': followee}).count() 
+    followingcount = followingcol.find({'_id': username}).count()
     ts = datetime.datetime.utcnow()
     if fcount > 1:
         #BADBADBAD
         logger.error("mutliple users in followcoll with name " + followee)
         return HTTPFound(location=request.current_route_url())
-    elif fcount == 1:
-        followdoc = followcoll.find({'_id': followee})
-        for follower in followdoc[0]['followers']:
-            if follower['username'] != username:
-                followcoll.update({'_id': followee},{"$addToSet" : { "followers": { "username": username, "followts": ts}}})
+    elif followingcount > 1:
+        logger.error("multiple users in followingcol with name " + username)
+        return HTTPFound(location=request.current_route_url())
     elif fcount == 0:
         #need to create follower index for 
         #TODO remove and add at user creation time 
         followcoll.insert({'_id': followee, 'followers': [ { "username": username, "followts": ts}]})
+    elif followingcount == 0:
+        #need to create follower index for 
+        followingcol.insert({'_id': username, 'following': [ {  "username": followee, "followts": ts}]})
+    elif fcount == 1 :
+        followdoc = followcoll.find({'_id': followee})[0]
+        followingdoc = followingcol.find({'_id': username})[0]
+        for user in followdoc['followers']:
+            if user['username'] == username:
+                return HTTPFound(location=request.current_route_url())
+        for user in followingdoc['following']:
+            if user['username'] == followee:
+                return HTTPFound(location=request.current_route_url())
+        followcoll.update({'_id': followee},{"$push" : { "followers": { "username": username, "followts": ts}}})
+        followingcol.update({'_id': username}, {"$push": { "following": { "username": followee, "followts": ts}}})
     #and done!
     return HTTPFound(location=request.current_route_url())
 
@@ -191,8 +206,22 @@ def followers_view(request):
     else:
         logger.error('got more than one use in followcoll in followers_view')
         followers = []
-    return {'followers': followers}
+    return {'followers': followers, 'name': username}
 
+@view_config(route_name='following', renderer='following.mako')
+def following_view(request):
+    logger.info("in following view")
+    username = request.matchdict['follower']
+    count = followingcol.find({'_id': username}).count()
+    if count == 0:
+        #empty return TODO
+        following =[]
+    elif count == 1:
+        following = followingcol.find({'_id':username})[0]['following']
+    else:
+        logger.error('got more than one use in followcoll in followers_view')
+        following = []
+    return {'following': following, 'name': username}
 
 @view_config(route_name='login', renderer='login.mako') 
 def login_view(request): 
