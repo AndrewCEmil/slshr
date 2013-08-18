@@ -20,7 +20,7 @@ from pyramid.security import (
 
 from wsgiref.simple_server import make_server
 
-logging.basicConfig(filename="tasks.py"+'.log', level=logging.DEBUG)
+logging.basicConfig(filename="tasks.py"+'.log', level=logging.INFO)
 logger = logging.getLogger(__file__)
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -171,23 +171,30 @@ def follow_request(request):
     elif followingcount > 1:
         logger.error("multiple users in followingcol with name " + username)
         return HTTPFound(location=request.current_route_url())
-    elif fcount == 0:
+    elif fcount == 0 or followingcount == 0:
+        logger.info('no entry in followers or in following, inserting')
+        #this and the next if are really bad code, need to fix somehow
         #need to create follower index for 
         #TODO remove and add at user creation time 
         followcoll.insert({'_id': followee, 'followers': [ { "username": username, "followts": ts}]})
+        followingcol.insert({'_id': username, 'following': [ {  "username": followee, "followts": ts}]})
     elif followingcount == 0:
         #need to create follower index for 
         followingcol.insert({'_id': username, 'following': [ {  "username": followee, "followts": ts}]})
-    elif fcount == 1 :
+    elif fcount == 1 and followingcount == 1:
         followdoc = followcoll.find({'_id': followee})[0]
         followingdoc = followingcol.find({'_id': username})[0]
         for user in followdoc['followers']:
             if user['username'] == username:
+                logger.info(username + ' is already following ' + followee)
                 return HTTPFound(location=request.current_route_url())
         for user in followingdoc['following']:
             if user['username'] == followee:
+                logger.info(followee + ' is already followed by ' + username)
                 return HTTPFound(location=request.current_route_url())
-        followcoll.update({'_id': followee},{"$push" : { "followers": { "username": username, "followts": ts}}})
+
+        logger.info('finally insterting new followee and follower')
+        followcoll.update({'_id': followee}, {"$push" : { "followers": { "username": username, "followts": ts}}})
         followingcol.update({'_id': username}, {"$push": { "following": { "username": followee, "followts": ts}}})
     #and done!
     return HTTPFound(location=request.current_route_url())
@@ -208,12 +215,12 @@ def unfollow_reqeust(request):
 
     #and verify we got a real user unfollowee
     unfollowee = request.POST.get('unfollowee')
-    usercount = usercoll.find({'_id': unfollowee})
+    usercount = usercoll.find({'_id': unfollowee}).count()
     if usercount == 0:
         logger.warning(username + " just tried to unfollow a not real user: " + unfollowee)
         return HTTPFound(location=request.current_route_url())
     if usercount > 1:
-        logger.error("multiple users with name " + unfollowee)
+        logger.error(str(usercount) + " users with name " + unfollowee)
         return HTTPFound(location=request.current_route_url())
 
     if unfollowee is None:
@@ -233,6 +240,7 @@ def unfollow_reqeust(request):
         logger.errro('no users in folowingcol with name ' + username)
     else:
         #found exactly one user and one followee
+        logger.info('finally unfollowing completely')
         #remove username from followees followers list
         followcoll.update({'_id': unfollowee}, {'$pull': { 'followers': { 'username': username}}})
         #remove followee from users following list
