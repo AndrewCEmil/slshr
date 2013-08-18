@@ -76,22 +76,22 @@ def playlist_view(request):
 @view_config(route_name='newuser', renderer='newuser.mako')
 def new_user_view(request):
     logger.info("in new user view")
-    username = authenticated_userid(requests)
+    username = authenticated_userid(request)
     if username != "ace":
         return notfound_view(request)
     if request.method == 'POST':
         #validate input
         newusername = request.POST.get('newusername')
         newuserpass = request.POST.get('newuserpass')
-        listname = request.POST.get('listname')
-        if newusername is not None and newuserpass is not None and listname is not None:
+        if newusername is not None and newuserpass is not None:
             #generate hash
             salt = gensalt()
             wp = whirlpool.new("" + newuserpass + salt)
             passhash = wp.hexdigest()
             #insert into db
-            usercoll.insert({"_id": newusername, "hash": passhash, "salt": salt, "groups": ["admin"]})
-            playcoll.insert({'name' : listname, 'author' : newusername})
+            usercoll.insert({"_id": newusername, "hash": passhash, "salt": salt})
+            playcoll.insert({'author' : newusername})
+            followingcol.insert({'_id': newusername, 'following': []})
             request.session.flash("user created")
         else:
             request.session.flash('Please fill out all the fields')
