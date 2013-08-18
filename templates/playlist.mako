@@ -8,6 +8,14 @@ function postfollow() {
         alert(data);
     })
 }
+
+function postUnfollow() {
+    $.post('/unfollow',
+    { 'unfollowee': '${name}' },
+    function(data) {
+        alert(data);
+    })
+}
 </script>
 
 <h1>${name}'s List</h1>
@@ -26,4 +34,4 @@ function postfollow() {
 % endif
 </ul>
 <button onclick="postfollow()">Follow</button>
-
+<button onclick="postUnfollow()">Unfallow</button>
