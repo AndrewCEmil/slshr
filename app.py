@@ -61,6 +61,7 @@ def add_routes(config):
     config.add_route('followers', '/followers/{followee}')
     config.add_route('following', '/following/{follower}')
     config.add_route('followreq', '/follow')
+    config.add_route('unfollowreq', '/unfollow')
     config.add_static_view('static', os.path.join(here, 'static'))
     
 if __name__ == '__main__':

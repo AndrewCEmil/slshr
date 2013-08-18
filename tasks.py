@@ -76,7 +76,7 @@ def playlist_view(request):
 @view_config(route_name='newuser', renderer='newuser.mako')
 def new_user_view(request):
     logger.info("in new user view")
-    username = authenticated_userid(requests)
+    username = authenticated_userid(request)
     if username != "ace":
         return notfound_view(request)
     if request.method == 'POST':
@@ -132,7 +132,6 @@ def follow():
         #return follow.mako
         #TODO
 """
-
 
 #this is the post-only endpoint that should not be linked to, but used for sending data to
 @view_config(route_name="followreq", request_method='POST')
@@ -192,6 +191,59 @@ def follow_request(request):
         followingcol.update({'_id': username}, {"$push": { "following": { "username": followee, "followts": ts}}})
     #and done!
     return HTTPFound(location=request.current_route_url())
+
+#again, only an endpoint
+@view_config(route_name='unfollowreq', request_method='POST')
+def unfollow_reqeust(request):
+    logger.info('got an unfollow request')
+    #get username
+    username = authenticated_userid(request)
+    if username is None:
+        logger.warning('got a request to unfollow without a username')
+        request.session.flash('need to be logged in to unfollow')
+        return HTTPFound(location=request.current_route_url())
+    #and verify we got a real user
+    #TODO verify the username is a real user
+    #TODO pull out that check into a method
+
+    #and verify we got a real user unfollowee
+    unfollowee = request.POST.get('unfollowee')
+    usercount = usercoll.find({'_id': unfollowee})
+    if usercount == 0:
+        logger.warning(username + " just tried to unfollow a not real user: " + unfollowee)
+        return HTTPFound(location=request.current_route_url())
+    if usercount > 1:
+        logger.error("multiple users with name " + unfollowee)
+        return HTTPFound(location=request.current_route_url())
+
+    if unfollowee is None:
+        logger.warning('got a request to unfollow but no followee')
+        request.session.flash('need to unfollow a user lol')
+        return HTTPFound(location=reqeuest.current_route_url()) 
+    
+    followcount = followcoll.find({'_id': unfollowee}).count()
+    followingcount = followingcol.find({'_id': username}).count()
+    if followcount > 1:
+        logger.error('multiple users in followcoll with name ' + unfollowee)
+    elif followingcount > 1:
+        logger.error('multiple users in followingcol with name ' + username)
+    elif followingcount == 0:
+        logger.error('no users in followcoll with name ' + unfollowee)
+    elif followingcount == 0:
+        logger.errro('no users in folowingcol with name ' + username)
+    else:
+        #found exactly one user and one followee
+        #remove username from followees followers list
+        followcoll.update({'_id': unfollowee}, {'$pull': { 'followers': { 'username': username}}})
+        #remove followee from users following list
+        followingcol.update({'_id': username}, {'$pull': { 'following': { 'username': unfollowee}}})
+    #and done
+    return HTTPFound(location=request.current_route_url())
+    
+    
+    
+    
+
 
 @view_config(route_name='followers', renderer='followers.mako')
 def followers_view(request):
