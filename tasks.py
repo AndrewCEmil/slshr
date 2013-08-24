@@ -41,8 +41,6 @@ followcoll = db['followers']
 followingcol = db['following']
 
 
-# views
-
 @view_config(route_name='home')
 def home_view(request):
     logger.info('in home view')
@@ -83,81 +81,46 @@ def new_user_view(request):
         #validate input
         newusername = request.POST.get('newusername')
         newuserpass = request.POST.get('newuserpass')
-        if newusername is not None and newuserpass is not None:
-            #generate hash
-            salt = gensalt()
-            wp = whirlpool.new("" + newuserpass + salt)
-            passhash = wp.hexdigest()
-            #insert into db
-            usercoll.insert({"_id": newusername, "hash": passhash, "salt": salt})
-            playcoll.insert({'author' : newusername})
-            followingcol.insert({'_id': newusername, 'following': []})
-            request.session.flash("user created")
+        if newusername is None or newuserpass is None:
+            request.session.flash('please fill out all the fields')
+        elif user_exists(newusername):
+            request.session.flash('Username already taken :(')
+        elif not create_new_user(newusername, newuserpass):
+            request.session.flash('error creating user...strange')
         else:
-            request.session.flash('Please fill out all the fields')
-    return {}
+            request.session.flash('successfuly created!')
+        return {}
 
 @view_config(route_name='edit', renderer="edit.mako")
 def edit_view(request):
     logger.info('in edit view')
     username = authenticated_userid(request)
-    if username is None:
-        return HTTPFound(location=request.route_url('login'))    
-    playlist_col = db[username]
-    
-    articles = []
-    for article in playlist_col.find():
-        articles.append(article)
+    #if username is None:
+    #    return HTTPFound(location=request.route_url('login'))    
+    if not user_exists(username):
+        return HTTPFound(location=request.route_url('login'))
+    articles = get_user_articles(username)
 
     if request.method == 'POST':
         headline = reqeust.POST.get('linkname')
         url = request.POST.get('url')
-        if headline is None or url is None:
-            request.session.flash('Please fill out all the fields')
-        else:
-            ts = datetime.datetime.utcnow()
-            newarticle = {'url': url, 'headline': headline, 'timestamp': ts}
-            articles.append(newarticle)
-            playlist_col.insert(newarticle)
+        if not insert_user_article(username, headline, url):
+            request.sessision.flash('Please enter a valid article')
+            return HTTPFound(location=request.current_route_url())
     logger.debug('returning from edit')
     return {'name': username, 'articles': articles}
-
-"""
-@view_config(route_name='follow', renderer='follow.mako')
-def follow():
-    username = authenticated_userid(request)
-    if username is None:
-        #TODO generic follow page
-    if request.method != "POST":
-        #return follow.mako
-        #TODO
-"""
 
 #this is the post-only endpoint that should not be linked to, but used for sending data to
 @view_config(route_name="followreq", request_method='POST')
 def follow_request(request):
     logger.info('got a follow request')
     username = authenticated_userid(request)
-    if username is None:
-        logger.warning("got a request to follow without a username")
-        request.session.flash("need to be logged in to follow")
-        return HTTPFound(location=request.current_route_url())
-
     followee = request.POST.get('followee')
-    if followee is None:
-        logger.warning("got a request to follow but no followee")
-        request.session.flash("need to follow a user lol")
+    if not user_exists(username):
+        request.session.flash('need to be logged in to follow')
         return HTTPFound(location=request.current_route_url())
-
-    #first verify that this is a user we are following
-    if usercoll.find({"_id" : followee}).count() == 0:
-        #not a real user to follow
-        logger.warning(username + " just tried to follow " + followee + " but not found")
-        request.session.flash("found no users named " + followee)
-        return HTTPFound(location=request.current_route_url())
-    if usercoll.find({'_id' : followee}).count() > 1:
-        #BADBADBAD
-        logger.error("multiple users in usercoll with name " + followee)
+    if not user_exists(followee):
+        request.session.flash('need to follow an actual user')
         return HTTPFound(location=request.current_route_url())
     
     #find the followcoll document to update
@@ -249,38 +212,24 @@ def unfollow_reqeust(request):
     return HTTPFound(location=request.current_route_url())
     
     
-    
-    
-
-
 @view_config(route_name='followers', renderer='followers.mako')
 def followers_view(request):
     logger.info("in followers view")
     username = request.matchdict['followee']
-    count = followcoll.find({'_id': username}).count()
-    if count == 0:
-        #empty return TODO
-        followers =[]
-    elif count == 1:
-        followers = followcoll.find({'_id':username})[0]['followers']
-    else:
-        logger.error('got more than one use in followcoll in followers_view')
-        followers = []
+    if not user_exists(username):
+        return {'followers': [], 'name': username}
+    follwers = get_user_followers(username)
     return {'followers': followers, 'name': username}
 
 @view_config(route_name='following', renderer='following.mako')
 def following_view(request):
     logger.info("in following view")
     username = request.matchdict['follower']
-    count = followingcol.find({'_id': username}).count()
-    if count == 0:
-        #empty return TODO
-        following =[]
-    elif count == 1:
-        following = followingcol.find({'_id':username})[0]['following']
-    else:
-        logger.error('got more than one use in followcoll in followers_view')
-        following = []
+    if not user_exists(username):
+        #TODO need better behavior here probably a redirect
+        return {'followers': [], 'name': username}
+
+    following = get_user_following(username)
     return {'following': following, 'name': username}
 
 @view_config(route_name='login', renderer='login.mako') 
@@ -309,28 +258,4 @@ def login_view(request):
 def notfound_view(request):
     request.response.status = '404 Not Found'
     return {}
-
-
-def usercheck(creds, request):
-    return credcheck(creds['login'], creds['password'])
-
-def credcheck(login, password):
-    #first lookup in db and validate
-    cursor = usercoll.find({"_id" : login})
-    if cursor.count() == 0:
-        logger.info("looked up " + login + ", found 0 users")
-        return False
-    if cursor.count() > 1:
-        logger.warning("looked up " + login + ", found multiple users!")
-        return False
-    userdoc = cursor[0]
-    #now generate the hash 
-    wp = whirlpool.new("" + password + userdoc['salt'])
-    passhash = wp.hexdigest()
-    if passhash == userdoc['hash']:
-        return True 
-    return False
-
-def gensalt():
-    return os.urandom(512).encode('base64')#length of the hash output i think...
 
