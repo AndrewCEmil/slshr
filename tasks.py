@@ -1,7 +1,6 @@
 import os
 import logging
 import pymongo
-import whirlpool
 import datetime
 
 from pyramid.config import Configurator
@@ -20,7 +19,8 @@ from pyramid.security import (
 
 from wsgiref.simple_server import make_server
 
-logging.basicConfig(filename="tasks.py"+'.log', level=logging.INFO)
+from userops import *
+
 logger = logging.getLogger(__file__)
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -49,6 +49,7 @@ def home_view(request):
     return HTTPFound(location=request.route_url('playlists'))
     
 
+#TODO this should be pulled out of the view
 @view_config(route_name='playlists', renderer='playlists.mako')
 def playlists_view(request):
     logger.info("in playlists view")
@@ -62,14 +63,13 @@ def playlists_view(request):
 @view_config(route_name='playlist', renderer='playlist.mako')
 def playlist_view(request):
     logger.info("in playlist view")
-    articles = []
-    logger.info("finding playlist")
-    playlist_name = request.matchdict['name']
-    playlist_col = db[playlist_name]
-    for article in playlist_col.find():
-        articles.append(article)
-        logger.info(article['headline'])
-    return { "articles" : articles, "name" : playlist_name }
+    username = request.matchdict['name']
+    if username is None:
+        #TODO what is the proper behavior here?
+        #probably a redirect + a flash
+        logger.error('got a playlist request where name is None')
+    articles = get_user_articles(username)
+    return { "articles" : articles, "name" : username }
 
 @view_config(route_name='newuser', renderer='newuser.mako')
 def new_user_view(request):
@@ -110,6 +110,8 @@ def edit_view(request):
     logger.debug('returning from edit')
     return {'name': username, 'articles': articles}
 
+#TODO here we need to provide better responses back
+#how to respond in ajax requests?
 #this is the post-only endpoint that should not be linked to, but used for sending data to
 @view_config(route_name="followreq", request_method='POST')
 def follow_request(request):
@@ -123,6 +125,7 @@ def follow_request(request):
         request.session.flash('need to follow an actual user')
         return HTTPFound(location=request.current_route_url())
     
+    """
     #find the followcoll document to update
     fcount = followcoll.find({'_id': followee}).count() 
     followingcount = followingcol.find({'_id': username}).count()
@@ -159,9 +162,17 @@ def follow_request(request):
         logger.info('finally insterting new followee and follower')
         followcoll.update({'_id': followee}, {"$push" : { "followers": { "username": username, "followts": ts}}})
         followingcol.update({'_id': username}, {"$push": { "following": { "username": followee, "followts": ts}}})
+        """
+    if not new_follow(username, followee):
+        #TODO better info to user here
+        request.session.flash('need to follow an actual user')
+        return HTTPFound(location=request.current_route_url())
+    else:
+        request.session.flash('followed successfully')
     #and done!
     return HTTPFound(location=request.current_route_url())
 
+#TODO need to pull this into userops
 #again, only an endpoint
 @view_config(route_name='unfollowreq', request_method='POST')
 def unfollow_reqeust(request):
@@ -218,7 +229,7 @@ def followers_view(request):
     username = request.matchdict['followee']
     if not user_exists(username):
         return {'followers': [], 'name': username}
-    follwers = get_user_followers(username)
+    followers = get_user_followers(username)
     return {'followers': followers, 'name': username}
 
 @view_config(route_name='following', renderer='following.mako')
