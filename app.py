@@ -15,8 +15,6 @@ from bson.objectid import ObjectId
 from pyramid.authentication import SessionAuthenticationPolicy
 
 from wsgiref.simple_server import make_server
-from tasks import usercheck
-
 
 logging.basicConfig(filename=__file__+'.log', level=logging.DEBUG)
 logger = logging.getLogger(__file__)
