@@ -20,6 +20,10 @@ function postUnfollow() {
 
 <h1>${name}'s List</h1>
 
+<p>
+    <a href='/followers/${name}'>${name}'s followers</a>
+    <a href='/following/${name}'>${name} follows</a>
+</p>
 <ul id="articles">
 % if articles:
   % for article in articles:
