@@ -53,6 +53,7 @@ def add_routes(config):
     config.add_route('home', '/')
     config.add_route('playlists', '/people')
     config.add_route('playlist', '/playlist/{name}')
+    config.add_route('feed', '/feed/{name}')
     config.add_route('newuser', '/newuser')
     config.add_route('edit', '/edit')
     config.add_route('login', '/login')

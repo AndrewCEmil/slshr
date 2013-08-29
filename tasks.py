@@ -102,11 +102,14 @@ def edit_view(request):
     articles = get_user_articles(username)
 
     if request.method == 'POST':
-        headline = reqeust.POST.get('linkname')
+        headline = request.POST.get('linkname')
         url = request.POST.get('url')
-        if not insert_user_article(username, headline, url):
+        new_user_article = insert_user_article(username, headline, url)
+        if new_user_article is None:
             request.sessision.flash('Please enter a valid article')
             return HTTPFound(location=request.current_route_url())
+        else:
+            articles.append(new_user_article)
     logger.debug('returning from edit')
     return {'name': username, 'articles': articles}
 
@@ -221,6 +224,35 @@ def following_view(request):
 
     following = get_user_following(username)
     return {'following': following, 'name': username}
+
+@view_config(route_name='feed', renderer='feed.mako')
+def feed_view(request):
+    logger.info('in feed view')
+    feeduser = request.matchdict['name']
+    if not user_exists(feeduser):
+        request.session.flash('need to look at a real users feed')
+        return HTTPFound(location=request.route_url('/people'))
+
+    selections = generate_feed(feeduser)
+    return {"selections": selections, "name": feeduser}
+
+#NOTE: assumes feeduser is a real user
+def generate_feed(feeduser):
+    #first get all people they are following
+    following = get_user_following(feeduser)
+    #create a list of all the articles from all those users
+    selections = []
+    for user in following:
+        articles = get_user_articles(user['username'])
+        for article in articles:
+            article['author'] = user['username']
+        selections = selections + articles
+
+    #sort the list
+    selections.sort(key=lambda selection: selection['timestamp'])
+    return selections
+    
+
 
 @view_config(route_name='login', renderer='login.mako') 
 def login_view(request): 

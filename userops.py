@@ -71,17 +71,18 @@ def create_new_user(username, userpass):
 def get_user_articles(username):
     playlistcol = db[username]
     articles = list(playlistcol.find())
+    return articles
 
 #NOTE: assumes that the user is already verified
 def insert_user_article(username, headline, url):
     if headline is not None and url is not None:
+        playlist_col = db[username]
         #TODO here do link validation
-        ts = datetime.datetune.utcnow()
+        ts = datetime.datetime.utcnow()
         newarticle = {'url': url, 'headline': headline, 'timestamp': ts}
-        articles.append(newarticle)
         playlist_col.insert(newarticle)
-        return True
-    return False
+        return newarticle
+    return None
 
 #NOTE: assumes these are valid users
 def follows(follower, followee):
