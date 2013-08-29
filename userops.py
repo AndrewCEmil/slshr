@@ -91,11 +91,11 @@ def follows(follower, followee):
     alreadyfollowing = False
     alreadyfollowed = False
     for user in following:
-        if user == followee:
+        if user['username'] == followee:
             alreadyfollowing = True
             break
     for user in followers:
-        if user == follower:
+        if user['username'] == follower:
             alreadyfollowed = True
 
     #if alreadyfollowing != alreadyfollowed
@@ -175,8 +175,8 @@ def unfollow(follower, followee):
         #TODO should this be an exception?
         logger.error('no entry in followers for user ' + followee)
         return False
-    if follwcount > 1:
-        looger.error('followcol has multiple users with name ' + followee)
+    if followcount > 1:
+        logger.error('followcol has multiple users with name ' + followee)
         return False
 
     followingcursor = followingcol.find({'_id': follower})
@@ -184,15 +184,16 @@ def unfollow(follower, followee):
     if followingcount == 0:
         logger.error('no entry in followers for user ' + username)
         return False
-    if follwcount > 1:
-        looger.error('followcol has multiple users with name ' + followee)
+    if followcount > 1:
+        logger.error('followcol has multiple users with name ' + followee)
         return False
 
     if not follows(follower, followee):
+        logger.info(follower + " does not follow " + followee)
         return False
 
-    followerscoll.update({'_id': followee}, {"$remove" : { "followers": { "username": username}}})
-    followingcol.update({'_id': username}, {"$remove": { "following": { "username": followee}}})
+    followerscol.update({'_id': followee}, {"$pull" : { "followers": { "username": follower}}})
+    followingcol.update({'_id': follower}, {"$pull": { "following": { "username": followee}}})
     return True
 
 

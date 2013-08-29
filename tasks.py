@@ -124,48 +124,9 @@ def follow_request(request):
     if not user_exists(followee):
         request.session.flash('need to follow an actual user')
         return HTTPFound(location=request.current_route_url())
-    
-    """
-    #find the followcoll document to update
-    fcount = followcoll.find({'_id': followee}).count() 
-    followingcount = followingcol.find({'_id': username}).count()
-    ts = datetime.datetime.utcnow()
-    if fcount > 1:
-        #BADBADBAD
-        logger.error("mutliple users in followcoll with name " + followee)
-        return HTTPFound(location=request.current_route_url())
-    elif followingcount > 1:
-        logger.error("multiple users in followingcol with name " + username)
-        return HTTPFound(location=request.current_route_url())
-    elif fcount == 0 or followingcount == 0:
-        logger.info('no entry in followers or in following, inserting')
-        #this and the next if are really bad code, need to fix somehow
-        #need to create follower index for 
-        #TODO remove and add at user creation time 
-        followcoll.insert({'_id': followee, 'followers': [ { "username": username, "followts": ts}]})
-        followingcol.insert({'_id': username, 'following': [ {  "username": followee, "followts": ts}]})
-    elif followingcount == 0:
-        #need to create follower index for 
-        followingcol.insert({'_id': username, 'following': [ {  "username": followee, "followts": ts}]})
-    elif fcount == 1 and followingcount == 1:
-        followdoc = followcoll.find({'_id': followee})[0]
-        followingdoc = followingcol.find({'_id': username})[0]
-        for user in followdoc['followers']:
-            if user['username'] == username:
-                logger.info(username + ' is already following ' + followee)
-                return HTTPFound(location=request.current_route_url())
-        for user in followingdoc['following']:
-            if user['username'] == followee:
-                logger.info(followee + ' is already followed by ' + username)
-                return HTTPFound(location=request.current_route_url())
-
-        logger.info('finally insterting new followee and follower')
-        followcoll.update({'_id': followee}, {"$push" : { "followers": { "username": username, "followts": ts}}})
-        followingcol.update({'_id': username}, {"$push": { "following": { "username": followee, "followts": ts}}})
-        """
     if not new_follow(username, followee):
         #TODO better info to user here
-        request.session.flash('need to follow an actual user')
+        request.session.flash('following failed')
         return HTTPFound(location=request.current_route_url())
     else:
         request.session.flash('followed successfully')
@@ -173,12 +134,29 @@ def follow_request(request):
     return HTTPFound(location=request.current_route_url())
 
 #TODO need to pull this into userops
+#how to alert users on ajax responses?
 #again, only an endpoint
 @view_config(route_name='unfollowreq', request_method='POST')
 def unfollow_reqeust(request):
     logger.info('got an unfollow request')
     #get username
     username = authenticated_userid(request)
+    followee = request.POST.get('unfollowee')
+    if not user_exists(username):
+        request.session.flash('need to be logged in to unfollow')
+        return HTTPFound(location=request.current_route_url())
+    if not user_exists(followee):
+        request.session.flash('need to to unfollow an actual user')
+        return HTTPFound(location=request.current_route_url())
+    if not unfollow(username, followee):
+        logger.debug('unfollowed failed!')
+        request.session.flash('unfollowing failed')
+        return HTTPFound(location=request.current_route_url())
+
+    logger.debug('unfollowed successfully!')
+    return HTTPFound(location=request.current_route_url())
+
+"""
     if username is None:
         logger.warning('got a request to unfollow without a username')
         request.session.flash('need to be logged in to unfollow')
@@ -221,6 +199,7 @@ def unfollow_reqeust(request):
         followingcol.update({'_id': username}, {'$pull': { 'following': { 'username': unfollowee}}})
     #and done
     return HTTPFound(location=request.current_route_url())
+"""
     
     
 @view_config(route_name='followers', renderer='followers.mako')
