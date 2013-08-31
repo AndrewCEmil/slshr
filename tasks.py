@@ -23,24 +23,6 @@ from userops import *
 
 logger = logging.getLogger(__file__)
 
-here = os.path.dirname(os.path.abspath(__file__))
-
-dbconn = pymongo.Connection()
-db = dbconn['list']
-#schema: _id: default, name: string, closed = bool
-coll = db['tasks']
-#schema: _id: default, author:string
-playcoll = db['playlists']
-#schema: _id: username, hash: string, salt: string
-usercoll = db['users']
-#schema: _id default, url: string, headline: string, insertts: timestamp
-#thats schema for the playlist where the collection name is the curator
-#schema: _id: username, followts = timestamp followers = [{ username: username, followts: timestamp }] #TODO check this schema
-followcoll = db['followers']
-#schema: _id: username, following = [{ username: username, followts: timestamp }]
-followingcol = db['following']
-
-
 @view_config(route_name='home')
 def home_view(request):
     logger.info('in home view')
@@ -53,11 +35,7 @@ def home_view(request):
 @view_config(route_name='playlists', renderer='playlists.mako')
 def playlists_view(request):
     logger.info("in playlists view")
-    playlists = []
-    logger.info("finding playlists")
-    for playlist in playcoll.find():
-        logger.info(playlist)
-        playlists.append(playlist)
+    playlists = get_all_playlists()
     return { "playlists" : playlists }
 
 @view_config(route_name='playlist', renderer='playlist.mako')
@@ -159,52 +137,6 @@ def unfollow_reqeust(request):
     logger.debug('unfollowed successfully!')
     return HTTPFound(location=request.current_route_url())
 
-"""
-    if username is None:
-        logger.warning('got a request to unfollow without a username')
-        request.session.flash('need to be logged in to unfollow')
-        return HTTPFound(location=request.current_route_url())
-    #and verify we got a real user
-    #TODO verify the username is a real user
-    #TODO pull out that check into a method
-
-    #and verify we got a real user unfollowee
-    unfollowee = request.POST.get('unfollowee')
-    usercount = usercoll.find({'_id': unfollowee}).count()
-    if usercount == 0:
-        logger.warning(username + " just tried to unfollow a not real user: " + unfollowee)
-        return HTTPFound(location=request.current_route_url())
-    if usercount > 1:
-        logger.error(str(usercount) + " users with name " + unfollowee)
-        return HTTPFound(location=request.current_route_url())
-
-    if unfollowee is None:
-        logger.warning('got a request to unfollow but no followee')
-        request.session.flash('need to unfollow a user lol')
-        return HTTPFound(location=reqeuest.current_route_url()) 
-    
-    followcount = followcoll.find({'_id': unfollowee}).count()
-    followingcount = followingcol.find({'_id': username}).count()
-    if followcount > 1:
-        logger.error('multiple users in followcoll with name ' + unfollowee)
-    elif followingcount > 1:
-        logger.error('multiple users in followingcol with name ' + username)
-    elif followingcount == 0:
-        logger.error('no users in followcoll with name ' + unfollowee)
-    elif followingcount == 0:
-        logger.errro('no users in folowingcol with name ' + username)
-    else:
-        #found exactly one user and one followee
-        logger.info('finally unfollowing completely')
-        #remove username from followees followers list
-        followcoll.update({'_id': unfollowee}, {'$pull': { 'followers': { 'username': username}}})
-        #remove followee from users following list
-        followingcol.update({'_id': username}, {'$pull': { 'following': { 'username': unfollowee}}})
-    #and done
-    return HTTPFound(location=request.current_route_url())
-"""
-    
-    
 @view_config(route_name='followers', renderer='followers.mako')
 def followers_view(request):
     logger.info("in followers view")

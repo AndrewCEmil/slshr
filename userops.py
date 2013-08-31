@@ -7,12 +7,18 @@ logger = logging.getLogger(__file__)
 
 dbconn = pymongo.Connection()
 db = dbconn['list']
+#schema: _id: default, author:string
+playlistcol = db['playlists']
+#schema: _id: username, hash: string, salt: string
 usercol = db['users']
+#stupid col, probably should not even exist...
 playcol = db['playlists']
+#schema: _id: username, followts = timestamp followers = [{ username: username, followts: timestamp }] #TODO check this schema
 followerscol = db['followers']
+#schema: _id: username, following = [{ username: username, followts: timestamp }]
 followingcol = db['following']
-
-
+#schema: _id default, url: string, headline: string, insertts: timestamp
+#thats schema for the playlist where the collection name is the curator
 
 def usercheck(creds, request):
     return credcheck(creds['login'], creds['password'])
@@ -65,7 +71,15 @@ def create_new_user(username, userpass):
     usercol.insert({"_id": newusername, "hash": passhash, "salt": salt})
     playcol.insert({'author' : newusername})
     followingcol.insert({'_id': newusername, 'following': []})
+    followerscol.insert({'_id': newusername, 'followers': []})
     return True
+
+def get_all_playlists():
+    playlists = []
+    for playlist in playlistcol.find():
+        playlists.append(playlist)
+    return playlists
+
 
 #NOTE: assumes that the user exists and username is not None
 def get_user_articles(username):
