@@ -18,24 +18,36 @@ function postUnfollow() {
 }
 </script>
 
-<h1>${name}'s List</h1>
+<article id='playlistarticle'>
+    <section id='playlistmain'>
+        <header id='playlistheader'>
+            <h1>${name}'s List</h1>
+            <button onclick="postfollow()">Follow</button>
+            <button onclick="postUnfollow()">Unfallow</button>
+        </header>
 
-<p>
-    <a href='/followers/${name}'>${name}'s followers</a>
-    <a href='/following/${name}'>${name} follows</a>
-</p>
-<ul id="articles">
-% if articles:
-  % for article in articles:
-  <li>
-    <span class="articles">
-    <a href="${article['url']}">${article['headline']}</a>
-    </span>
-  </li>
-  % endfor
-% else:
-  <li>There are no articles</li>
-% endif
-</ul>
-<button onclick="postfollow()">Follow</button>
-<button onclick="postUnfollow()">Unfallow</button>
+        <section id='playlistcontent'>
+            <ul id="articles">
+            % if articles:
+              % for article in articles:
+              <li>
+                <span class="articles">
+                <a href="${article['url']}">${article['headline']}</a>
+                </span>
+              </li>
+              % endfor
+            % else:
+              <li>There are no articles</li>
+            % endif
+            </ul>
+        </section>
+    </section>
+
+    <!-- sidebar section -->
+    <aside id='playlistsidebar'>
+        <ul>
+            <li><a href='/followers/${name}'>${name}'s followers</a></li>
+            <li><a href='/following/${name}'>${name} follows</a></li>
+        </ul>
+    </aside>
+</article>

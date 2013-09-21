@@ -4,11 +4,11 @@
 <head>    
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pyramid Task's List Tutorial</title>
-  <meta name="author" content="Pylons Project">
+  <title>LinkLinker</title>
   <link rel="shortcut icon" href="/static/favicon.ico">
   <link rel="stylesheet" href="/static/bootstrap.min.css">
   <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/layout.css">
   <script src="/static/jquery-2.0.3.js"></script>
 </head>
 <body>
