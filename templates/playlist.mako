@@ -18,24 +18,31 @@ function postUnfollow() {
 }
 </script>
 
-<h1>${name}'s List</h1>
+<h1 class="text-center">${name}'s List</h1>
 
-<p>
-    <a href='/followers/${name}'>${name}'s followers</a>
-    <a href='/following/${name}'>${name} follows</a>
-</p>
-<ul id="articles">
-% if articles:
-  % for article in articles:
-  <li>
-    <span class="articles">
-    <a href="${article['url']}">${article['headline']}</a>
-    </span>
-  </li>
-  % endfor
-% else:
-  <li>There are no articles</li>
-% endif
-</ul>
-<button onclick="postfollow()">Follow</button>
-<button onclick="postUnfollow()">Unfallow</button>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class='span3'>
+            <ul class="table">
+                <li><a href='/followers/${name}'>${name}'s followers</a></li>
+                <li><a href='/following/${name}'>${name} follows</a></li>
+                <li><button onclick="postfollow()">Follow</button></li>
+                <li><button onclick="postUnfollow()">Unfallow</button></li>
+            </ul>
+        </div>
+        
+        <div class='span7'>
+            <table class="table" id="articles">
+            % if articles:
+              % for article in articles:
+              <tr><td>
+                <a href="${article['url']}">${article['headline']}</a>
+              </tr></td>
+              % endfor
+            % else:
+              <tr><td>There are no articles</tr></td>
+            % endif
+            </table>
+        </div>
+    </div>
+</div>
