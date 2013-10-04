@@ -22,8 +22,13 @@ function postUnfollow() {
     <section id='playlistmain'>
         <header id='playlistheader'>
             <h1>${name}'s List</h1>
-            <button onclick="postfollow()">Follow</button>
-            <button onclick="postUnfollow()">Unfallow</button>
+            % if loggedin:
+                % if userfollows:
+                    <button onclick="postfollow()">Follow</button>
+                % else:
+                    <button onclick="postUnfollow()">Unfallow</button>
+                % endif
+            % endif
         </header>
 
         <section id='playlistcontent'>
@@ -32,7 +37,7 @@ function postUnfollow() {
               % for article in articles:
               <li>
                 <span class="articles">
-                <a href="${article['url']}">${article['headline']}</a>
+                    <a href="${article['url']}">${article['headline']}</a>
                 </span>
               </li>
               % endfor

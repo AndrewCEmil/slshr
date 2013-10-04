@@ -19,7 +19,11 @@
             <a class="brand" href="/">22 Links</a>
             <ul class="nav pull-right">
               <li class="active">
-                <a href="/login">login</a>
+                % if loggedin:
+                    <a href="/logout">logout</a>
+                % else:
+                    <a href="/login">login</a>
+                % endif
               </li>
             </ul>
         </div>
