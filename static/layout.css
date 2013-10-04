@@ -1,0 +1,28 @@
+
+#playlistsidebar {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 300px;
+    float: left;
+    margin-top: 100px;
+    margin-right: 10px;
+    margin-left: 75px;
+}
+
+#playlistheader {
+    position: relative;
+    float: top;
+}
+
+#playlistcontent {
+    position: relative;
+    float: bottom;
+}
+
+#playlistmain {
+    position: relative;
+    float: right;
+    width: 500px;
+    margin-left:0;
+}

@@ -41,13 +41,19 @@ def playlists_view(request):
 @view_config(route_name='playlist', renderer='playlist.mako')
 def playlist_view(request):
     logger.info("in playlist view")
-    username = request.matchdict['name']
-    if username is None:
+    loggedin = False
+    username = authenticated_userid(request)
+    userfollows = False
+    reqname = request.matchdict['name']
+    if reqname is None:
         #TODO what is the proper behavior here?
         #probably a redirect + a flash
         logger.error('got a playlist request where name is None')
-    articles = get_user_articles(username)
-    return { "articles" : articles, "name" : username }
+    if username:
+        loggedin = True
+        userfollows = follows(username, reqname)
+    articles = get_user_articles(reqname)
+    return { "articles" : articles, "name" : reqname, "loggedin": loggedin, "userfollows": userfollows }
 
 @view_config(route_name='newuser', renderer='newuser.mako')
 def new_user_view(request):

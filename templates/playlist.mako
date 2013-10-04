@@ -26,8 +26,13 @@ function postUnfollow() {
             <ul class="table">
                 <li><a href='/followers/${name}'>${name}'s followers</a></li>
                 <li><a href='/following/${name}'>${name} follows</a></li>
-                <li><button onclick="postfollow()">Follow</button></li>
-                <li><button onclick="postUnfollow()">Unfallow</button></li>
+                % if loggedin:
+                    % if userfollows:
+                        <button onclick="postfollow()">Follow</button>
+                    % else:
+                        <button onclick="postUnfollow()">Unfallow</button>
+                    % endif
+                % endif
             </ul>
         </div>
         
