@@ -18,9 +18,15 @@ function postUnfollow() {
 }
 </script>
 
-<h1 class="text-center">${name}'s List</h1>
 
 <div class="container-fluid">
+    <div class="row-fluid">
+        <div class='span3'>
+        </div>
+        <div class='span7'>
+            <h1 class="text-center">${name}'s List</h1>
+        </div>
+    </div>
     <div class="row-fluid">
         <div class='span3'>
             <ul class="table">
