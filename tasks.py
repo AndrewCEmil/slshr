@@ -150,7 +150,7 @@ def followers_view(request):
     if not user_exists(username):
         return {'followers': [], 'name': username}
     followers = get_user_followers(username)
-    return {'followers': followers, 'name': username}
+    return {'followers': followers, 'name': username, "listname":"followers"}
 
 @view_config(route_name='following', renderer='following.mako')
 def following_view(request):
@@ -161,7 +161,7 @@ def following_view(request):
         return {'followers': [], 'name': username}
 
     following = get_user_following(username)
-    return {'following': following, 'name': username}
+    return {'following': following, 'name': username, "listname": "followees"}
 
 @view_config(route_name='feed', renderer='feed.mako')
 def feed_view(request):

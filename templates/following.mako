@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*- 
-<%inherit file="layout.mako"/>
+<%inherit file="named.mako"/>
 
-<h1><a href='/playlist/${name}'>${name}</a> follows:</h1>
-
-<ul id="playlists">
+<table class="table" id="playlists">
 % if following:
   % for followee in following:
-  <li>
+  <tr><td>
     <span class="name">
     <a href="/playlist/${followee['username']}">${followee['username']}</a>
     </span>
-  </li>
+  </td></tr>
   % endfor
 % else:
-  <li>Nobody</li>
+  <tr><td>Nobody</td></tr>
 % endif
-</ul>
+</table>
 
