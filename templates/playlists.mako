@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*- 
-<%inherit file="layout.mako"/>
+<%inherit file="unnamed.mako"/>
 
-<h1>PlayLists</h1>
-
-<ul id="playlists">
+<table class="table" id="playlists">
 % if playlists:
   % for playlist in playlists:
-  <li>
-    <span class="name">
+  <tr><td>
     <a href="/playlist/${playlist['author']}">${playlist['author']}</a>
-    </span>
-  </li>
+  </td></tr>
   % endfor
 % else:
-  <li>There are no playlists</li>
+  <tr><td>There are no playlists</td></td>
 % endif
-</ul>
+</table>
 

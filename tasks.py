@@ -36,7 +36,7 @@ def home_view(request):
 def playlists_view(request):
     logger.info("in playlists view")
     playlists = get_all_playlists()
-    return { "playlists" : playlists }
+    return { "playlists" : playlists, "listname":"Playlists"}
 
 @view_config(route_name='playlist', renderer='playlist.mako')
 def playlist_view(request):
@@ -172,7 +172,7 @@ def feed_view(request):
         return HTTPFound(location=request.route_url('/people'))
 
     selections = generate_feed(feeduser)
-    return {"selections": selections, "name": feeduser}
+    return {"selections": selections, "name": feeduser, "listname": "feed"}
 
 #NOTE: assumes feeduser is a real user
 def generate_feed(feeduser):

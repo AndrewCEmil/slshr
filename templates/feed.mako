@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*- 
-<%inherit file="layout.mako"/>
+<%inherit file="named.mako"/>
 
-<h1>${name}'s feed</h1>
-
-<ul id="selections">
+<table class="table" id="selections">
 % if selections:
   % for selection in selections:
-  <li>
-    <span class="selections">
+  <tr><td>
     <a href="${selection['url']}">${selection['headline']}</a> from ${selection['author']}
-    </span>
-  </li>
+  </td></tr>
   % endfor
 % else:
-  <li>No Selections :(</li>
+  <tr><td>No Selections :(</td></tr>
 % endif
-</ul>
+</table>
