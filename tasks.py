@@ -53,7 +53,7 @@ def playlist_view(request):
         loggedin = True
         userfollows = follows(username, reqname)
     articles = get_user_articles(reqname)
-    return { "articles" : articles, "name" : reqname, "loggedin": loggedin, "userfollows": userfollows }
+    return { "articles" : articles, "name" : reqname, "loggedin": loggedin, "userfollows": userfollows, "listname": "list" }
 
 @view_config(route_name='newuser', renderer='newuser.mako')
 def new_user_view(request):

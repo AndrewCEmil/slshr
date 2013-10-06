@@ -29,7 +29,7 @@
         </div>
       </div>  
   </header>    
-  <div id="page" class="container">
+  <div id="page" class="container-fluid">
     <div class="row">
       <div class="span4">
       % if request.session.peek_flash():
