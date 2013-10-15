@@ -3,7 +3,7 @@ import requests
 
 #TODO first section(123) works, 2nd section doesnt
 #              12    3        4     5   6
-url_pattern = '^(http(s)?://)?(\w.)*\w\.\w'
+url_pattern = r'^(http(s)?://)?(\w*\.)*\w*\.\w*'
 url_comp = re.compile(url_pattern)
 #1 start of string
 #2 http:// maybe
