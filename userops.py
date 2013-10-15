@@ -90,8 +90,8 @@ def get_user_articles(username):
 #NOTE: assumes that the user is already verified
 def insert_user_article(username, headline, url):
     if headline is not None and url is not None:
-        playlist_col = db[username]
         #TODO here do link validation
+        playlist_col = db[username]
         ts = datetime.datetime.utcnow()
         newarticle = {'url': url, 'headline': headline, 'timestamp': ts}
         playlist_col.insert(newarticle)
