@@ -21,8 +21,9 @@ def validate_url_format(url):
 
 
 def validate_url_alive(url):
-    #make request
-    #check to see if response code is 2xx or 3xx (warning)
+    resp = requests.get(url)
+    if resp.status_code >= 200 and resp.status_code < 400:
+        return True
 
 def validate_url(url):
     if not validate_url_format(url):
@@ -32,3 +33,7 @@ def validate_url(url):
         return False
 
     return True
+
+#TODO fill this shit out more lol
+#TODO url canonicalization
+#TODO define cannonicalized url format
