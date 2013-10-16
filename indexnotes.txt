@@ -1,0 +1,30 @@
+Schema and index definitions:
+    -single collection: users
+    -single format:
+
+{
+    _id: "ace" #username string
+    salt: "asdfas" #salt string
+    hash: "afsad" #hash string
+    signupts: ISODate(...) #timestamp from when user was created
+    followers: [{
+        username: "follower" #follower name/id
+        followts: ISODate(...) #timestamp from when follower started following _id
+        }] 
+    following: [{
+        username: "followee" #followee name/id
+        followts: ISODate(...) #timestamp from when _id started following followee
+        }]
+    links: [{
+        url: "google.com" #url for post
+        headline: "google" #headline for post
+        postts: ISODate(...) #timestamp for when post was created
+    }]
+}
+
+#TODO need to look over indexing strategy more
+Indexes:
+    {_id: 1}
+    {followers.username: 1}
+    {following.username: 1}
+    {signupts: 1} #for intro page
