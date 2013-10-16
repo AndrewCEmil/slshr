@@ -21,8 +21,12 @@ def validate_url_format(url):
 
 
 def validate_url_alive(url):
-    resp = requests.get(url)
-    if resp.status_code >= 200 and resp.status_code < 400:
+    resp = None
+    try:
+        resp = requests.get(url)
+    except:
+        return False
+    if resp is not None and resp.status_code >= 200 and resp.status_code < 400:
         return True
 
 def validate_url(url):

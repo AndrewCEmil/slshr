@@ -3,6 +3,8 @@ import whirlpool
 import logging
 import datetime
 
+from urlvalidation import validate_url
+
 logger = logging.getLogger(__file__)
 
 dbconn = pymongo.Connection()
@@ -87,15 +89,17 @@ def get_user_articles(username):
     articles = list(playlistcol.find())
     return articles
 
+#need to pass error up here
 #NOTE: assumes that the user is already verified
 def insert_user_article(username, headline, url):
     if headline is not None and url is not None:
-        #TODO here do link validation
-        playlist_col = db[username]
-        ts = datetime.datetime.utcnow()
-        newarticle = {'url': url, 'headline': headline, 'timestamp': ts}
-        playlist_col.insert(newarticle)
-        return newarticle
+        #TODO here provide info if url is not valid?
+        if validate_url(url):
+            playlist_col = db[username]
+            ts = datetime.datetime.utcnow()
+            newarticle = {'url': url, 'headline': headline, 'timestamp': ts}
+            playlist_col.insert(newarticle)
+            return newarticle
     return None
 
 #NOTE: assumes these are valid users

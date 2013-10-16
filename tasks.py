@@ -90,7 +90,7 @@ def edit_view(request):
         url = request.POST.get('url')
         new_user_article = insert_user_article(username, headline, url)
         if new_user_article is None:
-            request.sessision.flash('Please enter a valid article')
+            request.session.flash('Please enter a valid article')
             return HTTPFound(location=request.current_route_url())
         else:
             articles.append(new_user_article)
