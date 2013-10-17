@@ -8,6 +8,11 @@ from urlvalidation import validate_url
 logger = logging.getLogger(__file__)
 
 dbconn = pymongo.Connection()
+db = dbconn['slshr']
+#TODO better table name
+coll = db['realusers']
+
+
 db = dbconn['list']
 #schema: _id: default, author:string
 playlistcol = db['playlists']
@@ -27,7 +32,7 @@ def usercheck(creds, request):
 
 def credcheck(login, password):
     #first lookup in db and validate
-    cursor = usercol.find({"_id" : login})
+    cursor = coll.find({"_id" : login})
     if cursor.count() == 0:
         logger.info("looked up " + login + ", found 0 users")
         return False
@@ -47,7 +52,7 @@ def gensalt():
 
 #confirms there is a user is usercol that has this username
 def user_exists(username):
-    cursor = usercol.find({'_id': username})
+    cursor = coll.find({'_id': username})
     if cursor.count() == 0:
         return False
     elif cursor.count() > 1:
@@ -70,23 +75,27 @@ def create_new_user(username, userpass):
     wp = whirlpool.new("" + newuserpass + salt)
     passhash = wp.hexdigest()
     #insert into db
-    usercol.insert({"_id": newusername, "hash": passhash, "salt": salt})
-    playcol.insert({'author' : newusername})
-    followingcol.insert({'_id': newusername, 'following': []})
-    followerscol.insert({'_id': newusername, 'followers': []})
+    usedoc = {'_id': newusername}
+    userdoc['hash'] = passhash
+    userdoc['salt'] = salt
+    userdoc['signupts'] = datetime.datetime.utcnow()
+    userdoc['following'] = []
+    userdoc['followers'] = []
+    userdoc['links'] = []
+    coll.insert(userdoc)
     return True
 
 def get_all_playlists():
-    playlists = []
-    for playlist in playlistcol.find():
-        playlists.append(playlist)
-    return playlists
+    users = []
+    for user in coll.find():
+        users.append(users)
+    return users
 
 
 #NOTE: assumes that the user exists and username is not None
 def get_user_articles(username):
-    playlistcol = db[username]
-    articles = list(playlistcol.find())
+    user = coll.find({'_id': username})
+    articles = user['links']
     return articles
 
 #need to pass error up here
@@ -95,10 +104,10 @@ def insert_user_article(username, headline, url):
     if headline is not None and url is not None:
         #TODO here provide info if url is not valid?
         if validate_url(url):
-            playlist_col = db[username]
+            user = coll.find({'_id': username})
             ts = datetime.datetime.utcnow()
             newarticle = {'url': url, 'headline': headline, 'timestamp': ts}
-            playlist_col.insert(newarticle)
+            user['links'].append(newarticle)
             return newarticle
     return None
 
@@ -129,7 +138,8 @@ def follows(follower, followee):
 #get all the follows for a user
 #NOTE: assumes the user exists and is valid
 def get_user_following(username):
-    count = followingcol.find({'_id': username}).count()
+    cursor = coll.find({'_id': username})
+    count = cursor.count()
     following = []
     if count == 0:
         logger.error('no following entry for ' + username)
@@ -138,27 +148,27 @@ def get_user_following(username):
     else:
         logger.error('got more than one use in followcoll in followers_view')
         #TODO is this the right behavior?
-        following = followingcol.find({'_id':username})[0]['following']
+        following = cursor[0]
     return following
 
 #get all the follows for a user
 #NOTE: assumes the user exists and is valid
 def get_user_followers(username):
-    cursor = followerscol.find({'_id': username})
+    cursor = coll.find({'_id': username})
     count = cursor.count()
     followers = []
     if count == 1:
-        followers = followerscol.find({'_id':username})[0]['followers']
+        followers = cursor[0]['followers']
     elif count > 1:
         logger.error('got more than one use in followercol in get_user_followers')
-        followers = followercol.find({'_id':username})[0]['followers']
+        followers = cursor[0]['followers']
     else: 
         logger.error('no followers entry for ' + username)
     return followers
 
 #NOTE: assumes both users exist are are valid
 def new_follow(follower, followee):
-    followcursor = followerscol.find({'_id': followee})
+    followcursor = coll.find({'_id': followee})
     followcount = followcursor.count()
     if followcount == 0:
         #TODO should this be an exception?
@@ -168,7 +178,7 @@ def new_follow(follower, followee):
         looger.error('followcol has multiple users with name ' + followee)
         return False
 
-    followingcursor = followingcol.find({'_id': follower})
+    followingcursor = coll.find({'_id': follower})
     followingcount = followingcursor.count()
     if followingcount == 0:
         logger.error('no entry in followers for user ' + username)
@@ -183,12 +193,12 @@ def new_follow(follower, followee):
 
     #both are the right count
     ts = datetime.datetime.utcnow()
-    followerscol.update({'_id': followee}, {"$push" : { "followers": { "username": follower, "followts": ts}}})
-    followingcol.update({'_id': follower}, {"$push": { "following": { "username": followee, "followts": ts}}})
+    coll.update({'_id': followee}, {"$push" : { "followers": { "username": follower, "followts": ts}}})
+    coll.update({'_id': follower}, {"$push": { "following": { "username": followee, "followts": ts}}})
 
 #NOTE: assumes that both users exist and are valid
 def unfollow(follower, followee):
-    followcursor = followerscol.find({'_id': followee})
+    followcursor = coll.find({'_id': followee})
     followcount = followcursor.count()
     if followcount == 0:
         #TODO should this be an exception?
@@ -198,7 +208,7 @@ def unfollow(follower, followee):
         logger.error('followcol has multiple users with name ' + followee)
         return False
 
-    followingcursor = followingcol.find({'_id': follower})
+    followingcursor = coll.find({'_id': follower})
     followingcount = followingcursor.count()
     if followingcount == 0:
         logger.error('no entry in followers for user ' + username)
@@ -211,8 +221,8 @@ def unfollow(follower, followee):
         logger.info(follower + " does not follow " + followee)
         return False
 
-    followerscol.update({'_id': followee}, {"$pull" : { "followers": { "username": follower}}})
-    followingcol.update({'_id': follower}, {"$pull": { "following": { "username": followee}}})
+    coll.update({'_id': followee}, {"$pull" : { "followers": { "username": follower}}})
+    coll.update({'_id': follower}, {"$pull": { "following": { "username": followee}}})
     return True
 
 
