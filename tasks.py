@@ -73,7 +73,7 @@ def new_user_view(request):
             request.session.flash('error creating user...strange')
         else:
             request.session.flash('successfuly created!')
-        return {}
+    return {}
 
 @view_config(route_name='edit', renderer="edit.mako")
 def edit_view(request):

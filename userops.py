@@ -2,6 +2,7 @@ import pymongo
 import whirlpool
 import logging
 import datetime
+import os
 
 from urlvalidation import validate_url
 
@@ -72,10 +73,10 @@ def create_new_user(username, userpass):
 
     #generate hash
     salt = gensalt()
-    wp = whirlpool.new("" + newuserpass + salt)
+    wp = whirlpool.new("" + userpass + salt)
     passhash = wp.hexdigest()
     #insert into db
-    usedoc = {'_id': newusername}
+    userdoc = {'_id': username}
     userdoc['hash'] = passhash
     userdoc['salt'] = salt
     userdoc['signupts'] = datetime.datetime.utcnow()
@@ -86,15 +87,15 @@ def create_new_user(username, userpass):
     return True
 
 def get_all_playlists():
-    users = []
+    playlists = []
     for user in coll.find():
-        users.append(users)
-    return users
+        playlists.append(user)
+    return playlists
 
 
 #NOTE: assumes that the user exists and username is not None
 def get_user_articles(username):
-    user = coll.find({'_id': username})
+    user = coll.find({'_id': username})[0]
     articles = user['links']
     return articles
 
@@ -104,7 +105,7 @@ def insert_user_article(username, headline, url):
     if headline is not None and url is not None:
         #TODO here provide info if url is not valid?
         if validate_url(url):
-            user = coll.find({'_id': username})
+            user = coll.find({'_id': username})[0]
             ts = datetime.datetime.utcnow()
             newarticle = {'url': url, 'headline': headline, 'timestamp': ts}
             user['links'].append(newarticle)
@@ -144,11 +145,11 @@ def get_user_following(username):
     if count == 0:
         logger.error('no following entry for ' + username)
     elif count == 1:
-        following = followingcol.find({'_id':username})[0]['following']
+        following = cursor[0]['following']
     else:
         logger.error('got more than one use in followcoll in followers_view')
         #TODO is this the right behavior?
-        following = cursor[0]
+        following = cursor[0]['following']
     return following
 
 #get all the follows for a user

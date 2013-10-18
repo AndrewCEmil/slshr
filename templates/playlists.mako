@@ -5,7 +5,7 @@
 % if playlists:
   % for playlist in playlists:
   <tr><td>
-    <a href="/playlist/${playlist['_id']}">${playlist['author']}</a>
+    <a href="/playlist/${playlist['_id']}">${playlist['_id']}</a>
   </td></tr>
   % endfor
 % else:

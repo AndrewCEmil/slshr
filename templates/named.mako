@@ -35,9 +35,9 @@ function postUnfollow() {
             <li><a href='/following/${name}'>${name} follows</a></li>
             % if loggedin:
                 % if userfollows:
-                    <button onclick="postfollow()">Follow</button>
-                % else:
                     <button onclick="postUnfollow()">Unfallow</button>
+                % else:
+                    <button onclick="postfollow()">Follow</button>
                 % endif
             % endif
         </ul>
