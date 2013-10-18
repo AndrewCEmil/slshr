@@ -1,0 +1,11 @@
+-refactor: 
+    -redo schema for user
+    -change user ops to reflect new schema
+    -define new indexing for new schemas
+-existing pages to refactor for look and feel:
+    -login
+    -edit
+-side bar
+    -need to add the playlist link itself
+    -unfollow/follow should always be there, no matter what page
+-should the user automatically follow themselves?
