@@ -9,3 +9,7 @@
     -need to add the playlist link itself
     -unfollow/follow should always be there, no matter what page
 -should the user automatically follow themselves?
+
+###branch specific todos
+-seems like we are not properly storing the newly added articles!
+-lots of testing to do here...
