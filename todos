@@ -13,3 +13,4 @@
 ###branch specific todos
 -seems like we are not properly storing the newly added articles!
 -lots of testing to do here...
+-rename db coll to something not terrible lol
