@@ -103,12 +103,12 @@ def get_user_articles(username):
 #NOTE: assumes that the user is already verified
 def insert_user_article(username, headline, url):
     if headline is not None and url is not None:
-        #TODO here provide info if url is not valid?
         if validate_url(url):
             user = coll.find({'_id': username})[0]
             ts = datetime.datetime.utcnow()
             newarticle = {'url': url, 'headline': headline, 'timestamp': ts}
             user['links'].append(newarticle)
+            coll.update({'_id': username}, user)
             return newarticle
     return None
 
