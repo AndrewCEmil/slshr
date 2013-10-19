@@ -1,7 +1,3 @@
--refactor: 
-    -redo schema for user
-    -change user ops to reflect new schema
-    -define new indexing for new schemas
 -existing pages to refactor for look and feel:
     -login
     -edit
