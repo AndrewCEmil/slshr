@@ -210,6 +210,15 @@ def generate_feed(feeduser):
     return selections
     
 
+@view_config(route_name='logout')
+def logout_view(request):
+    logger.info('in logout view')
+    user = authenticated_userid(request)
+    if user is None:
+        request.session.flash("need to be logged in to log out, lol")
+    else:
+        forget(request)
+    return HTTPFound(location=request.route_url('playlists'))
 
 @view_config(route_name='login', renderer='login.mako') 
 def login_view(request): 
