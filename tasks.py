@@ -150,7 +150,14 @@ def followers_view(request):
     if not user_exists(username):
         return {'followers': [], 'name': username}
     followers = get_user_followers(username)
-    return {'followers': followers, 'name': username, "listname":"followers"}
+
+    user = authenticated_userid(request)
+    loggedin = False
+    userfollows = False
+    if user is not None:
+        loggedin = True
+        userfollows = follows(user, username) 
+    return {'followers': followers, 'name': username, "listname":"followers", "loggedin": loggedin, "userfollows": userfollows}
 
 @view_config(route_name='following', renderer='following.mako')
 def following_view(request):
@@ -160,8 +167,14 @@ def following_view(request):
         #TODO need better behavior here probably a redirect
         return {'followers': [], 'name': username}
 
+    user = authenticated_userid(request)
+    loggedin = False
+    userfollows = False
+    if user is not None:
+        loggedin = True
+        userfollows = follows(user, username) 
     following = get_user_following(username)
-    return {'following': following, 'name': username, "listname": "followees"}
+    return {'following': following, 'name': username, "listname": "followees", "loggedin": loggedin, "userfollows": userfollows}
 
 @view_config(route_name='feed', renderer='feed.mako')
 def feed_view(request):
@@ -171,8 +184,14 @@ def feed_view(request):
         request.session.flash('need to look at a real users feed')
         return HTTPFound(location=request.route_url('/people'))
 
+    user = authenticated_userid(request)
+    loggedin = False
+    userfollows = False
+    if user is not None:
+        loggedin = True
+        userfollows = follows(user, feeduser) 
     selections = generate_feed(feeduser)
-    return {"selections": selections, "name": feeduser, "listname": "feed"}
+    return {"selections": selections, "name": feeduser, "listname": "feed", "loggedin": loggedin, "userfollows": userfollows}
 
 #NOTE: assumes feeduser is a real user
 def generate_feed(feeduser):

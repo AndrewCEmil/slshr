@@ -30,6 +30,7 @@ function postUnfollow() {
 <div class="row-fluid">
     <div class='span3'>
         <ul class="table">
+            <li><a href='/playlist/${name}'>${name}'s playlist </a></li>
             <li><a href='/feed/${name}'>${name}'s feed </a></li>
             <li><a href='/followers/${name}'>${name}'s followers</a></li>
             <li><a href='/following/${name}'>${name} follows</a></li>
