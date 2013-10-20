@@ -36,7 +36,11 @@ def home_view(request):
 def playlists_view(request):
     logger.info("in playlists view")
     playlists = get_all_playlists()
-    return { "playlists" : playlists, "listname":"Playlists"}
+    loggedin = False
+    user = authenticated_userid(request)
+    if user is not None:
+        loggedin = True
+    return { "playlists" : playlists, "listname":"Playlists", "loggedin": loggedin}
 
 @view_config(route_name='playlist', renderer='playlist.mako')
 def playlist_view(request):
