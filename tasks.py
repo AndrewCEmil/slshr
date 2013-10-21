@@ -62,9 +62,6 @@ def playlist_view(request):
 @view_config(route_name='newuser', renderer='newuser.mako')
 def new_user_view(request):
     logger.info("in new user view")
-    username = authenticated_userid(request)
-    if username != "ace":
-        return notfound_view(request)
     if request.method == 'POST':
         #validate input
         newusername = request.POST.get('newusername')
@@ -77,6 +74,7 @@ def new_user_view(request):
             request.session.flash('error creating user...strange')
         else:
             request.session.flash('successfuly created!')
+            return HTTPFound(location=request.route_url('playlists'))
     return {}
 
 @view_config(route_name='edit', renderer="edit.mako")
