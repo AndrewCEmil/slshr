@@ -96,7 +96,7 @@ def get_all_playlists():
 #NOTE: assumes that the user exists and username is not None
 def get_user_articles(username):
     user = coll.find({'_id': username})[0]
-    articles = user['links']
+    articles = user['links'].reverse()
     return articles
 
 #need to pass error up here
