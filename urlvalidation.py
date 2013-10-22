@@ -1,5 +1,8 @@
 import re
 import requests
+import logging
+
+logger = logging.getLogger(__file__)
 
 #TODO first section(123) works, 2nd section doesnt
 #              12    3        4     5   6
@@ -30,12 +33,19 @@ def validate_url_alive(url):
         return True
 
 def validate_url(url):
+    logger.debug("in validate url for url: " + url)
+    #does it even matter what the form is if it gives a 200/300 response?
+    """
     if not validate_url_format(url):
+        logger.debug("not a valid format, returning")
         return False
+    """
 
     if not validate_url_alive(url):
+        logger.debug("not alive, returning")
         return False
 
+    logger.debug("looks like a valid url")
     return True
 
 #TODO fill this shit out more lol
