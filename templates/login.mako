@@ -3,7 +3,7 @@
 
 <h1>Login</h1>
 
-<p><a href='${request.route_url('newuser')'>Register</a></p>
+<p><a href='${request.route_url("newuser")}'>Register</a></p>
 
 <form action="${request.route_url('login')}" class="form-inline" method="post">
   <fieldset>
