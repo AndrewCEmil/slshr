@@ -209,6 +209,7 @@ def generate_feed(feeduser):
 
     #sort the list
     selections.sort(key=lambda selection: selection['timestamp'])
+    selections.reverse()
     return selections
     
 
