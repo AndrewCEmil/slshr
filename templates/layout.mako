@@ -18,6 +18,11 @@
         <div class="container">
             <a class="brand" href="/">22 Links</a>
             <ul class="nav pull-right">
+              % if loggedin:
+                  <li class="active">
+                    <a href='/edit'>edit list</a>
+                  </li>
+              % endif
               <li class="active">
                 % if loggedin:
                     <a href="/logout">logout</a>
