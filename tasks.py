@@ -74,7 +74,8 @@ def new_user_view(request):
             request.session.flash('error creating user...strange')
         else:
             request.session.flash('successfuly created!')
-            return HTTPFound(location=request.route_url('playlists'))
+            remember(request, newusername)
+            return HTTPFound(location=request.route_url('edit'))
     return {}
 
 @view_config(route_name='edit', renderer="edit.mako")
