@@ -82,8 +82,6 @@ def new_user_view(request):
 def edit_view(request):
     logger.info('in edit view')
     username = authenticated_userid(request)
-    #if username is None:
-    #    return HTTPFound(location=request.route_url('login'))    
     if not user_exists(username):
         return HTTPFound(location=request.route_url('login'))
     articles = get_user_articles(username)

@@ -33,7 +33,7 @@ def usercheck(creds, request):
 
 def credcheck(login, password):
     #first lookup in db and validate
-    cursor = coll.find({"_id" : login})
+    cursor = coll.find({"_id" : login.lower()})
     if cursor.count() == 0:
         logger.info("looked up " + login + ", found 0 users")
         return False
@@ -76,7 +76,7 @@ def create_new_user(username, userpass):
     wp = whirlpool.new("" + userpass + salt)
     passhash = wp.hexdigest()
     #insert into db
-    userdoc = {'_id': username}
+    userdoc = {'_id': username.lower()}
     userdoc['hash'] = passhash
     userdoc['salt'] = salt
     userdoc['signupts'] = datetime.datetime.utcnow()
