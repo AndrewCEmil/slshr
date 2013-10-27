@@ -94,7 +94,7 @@ def edit_view(request):
             request.session.flash('Please enter a valid article')
             return HTTPFound(location=request.current_route_url())
         else:
-            articles.append(new_user_article)
+            articles.insert(0,new_user_article)
     logger.debug('returning from edit')
     return {'name': username, 'articles': articles}
 
