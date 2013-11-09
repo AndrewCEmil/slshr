@@ -96,7 +96,7 @@ def edit_view(request):
         else:
             articles.insert(0,new_user_article)
     logger.debug('returning from edit')
-    return {'name': username, 'articles': articles}
+    return {'name': username, 'articles': articles, "loggedin": True, "userfollows": True, "listname": "edit"}
 
 #TODO here we need to provide better responses back
 #how to respond in ajax requests?

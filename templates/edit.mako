@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*- 
-<%inherit file="layout.mako"/>
-
-<h1>${name}'s List</h1>
+<%inherit file="named.mako"/>
 
 <form action="${request.current_route_url()}" class="form-inline" method="post">
     <fieldset>
@@ -11,17 +9,15 @@
     </fieldset>
 </form>
 
-<ul id="articles">
+<table class="table" id="articles">
 % if articles:
   % for article in articles:
-  <li>
-    <span class="articles">
+  <tr><td>
     <a href="${article['url']}">${article['headline']}</a>
-    </span>
-  </li>
+  </tr></td>
   % endfor
 % else:
-  <li>There are no articles</li>
+  <tr><td>There are no articles</tr></td>
 % endif
-</ul>
+</table>
 
