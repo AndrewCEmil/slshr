@@ -97,6 +97,7 @@ def get_all_playlists():
 def get_user_articles(username):
     user = coll.find({'_id': username})[0]
     articles = user['links']
+    articles.sort(key=lambda article: article['timestamp'])
     articles.reverse()
     return articles
 
@@ -112,6 +113,19 @@ def insert_user_article(username, headline, url):
             coll.update({'_id': username}, user)
             return newarticle
     return None
+
+#NOTE: assumes that the user is already verified and targetentry is not None
+def delete_user_article_by_id(username, targetid):
+    logger.info("in delete_user_article_by_id")
+
+def delete_user_article_by_idx(username, targetidx):
+    logger.info("in delete_user_article_by_idx")
+    #first get an ordered list of the users articles
+    articles = get_user_articles(username)
+    #now remove the deleted element
+    del articles[targetidx]
+    #call update
+    coll.update({"_id": username}, {"$set": {"links": articles}})
 
 #NOTE: assumes these are valid users
 def follows(follower, followee):

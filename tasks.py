@@ -144,6 +144,41 @@ def unfollow_reqeust(request):
     logger.debug('unfollowed successfully!')
     return HTTPFound(location=request.current_route_url())
 
+#TODO how to make this more secure?
+#deletes an entry from a users list
+@view_config(route_name="deletereq", request_method="POST")
+def delete_req(request):
+    logger.info("got a delete id request")
+    username = authenticated_userid(request)
+    if username is None:
+        request.session.flash("need to be logged in to edit")
+        return HTTPFound(location=request.current_route_url())
+    targetid = request.POST.get("targetid")
+    if targetid is None:
+        return HTTPFound(location=request.current_route_url())
+
+    logger.debug("calling delete_user_article_by_id")
+    delete_user_article_by_id(username, targetid)
+    return HTTPFound(location=request.current_route_url())
+
+#TODO how to make this more secure?
+#deletes an entry from a users list
+@view_config(route_name="deleteidxreq", request_method="POST")
+def delete_req(request):
+    logger.info("got a delete idx request")
+    username = authenticated_userid(request)
+    if username is None:
+        request.session.flash("need to be logged in to edit")
+        return HTTPFound(location=request.current_route_url())
+    targetidx = request.POST.get("targetidx")
+    if targetidx is None:
+        return HTTPFound(location=request.current_route_url())
+
+    logger.debug("calling delete_user_article_by_idx")
+    delete_user_article_by_idx(username, int(targetidx))
+    return HTTPFound(location=request.current_route_url())
+
+
 @view_config(route_name='followers', renderer='followers.mako')
 def followers_view(request):
     logger.info("in followers view")
