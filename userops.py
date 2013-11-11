@@ -3,6 +3,7 @@ import whirlpool
 import logging
 import datetime
 import os
+import uuid
 
 from urlvalidation import validate_url
 
@@ -108,7 +109,8 @@ def insert_user_article(username, headline, url):
         if validate_url(url):
             user = coll.find({'_id': username})[0]
             ts = datetime.datetime.utcnow()
-            newarticle = {'url': url, 'headline': headline, 'timestamp': ts}
+            id = uuid.uuid4()
+            newarticle = {'url': url, 'headline': headline, 'timestamp': ts, "id": id}
             user['links'].append(newarticle)
             coll.update({'_id': username}, user)
             return newarticle
@@ -117,6 +119,15 @@ def insert_user_article(username, headline, url):
 #NOTE: assumes that the user is already verified and targetentry is not None
 def delete_user_article_by_id(username, targetid):
     logger.info("in delete_user_article_by_id")
+    logger.debug(targetid)
+    targetuuid = uuid.UUID(targetid)
+    articles = get_user_articles(username)
+    for i, article in enumerate(articles):
+        if "id" in article.keys() and article['id'] == targetuuid:
+            logger.debug("found article to delete")
+            del articles[i]
+            break
+    coll.update({"_id": username}, {"$set": {"links": articles}})
 
 def delete_user_article_by_idx(username, targetidx):
     logger.info("in delete_user_article_by_idx")

@@ -31,8 +31,8 @@ function deleteByIdx(idx) {
   % for article in articles:
   <tr><td>
     <a href="${article['url']}">${article['headline']}</a>
-    % if id in article.keys():
-        <button onclick="deleteByID(${article['id']})">Delete</button>
+    % if "id" in article.keys():
+        <button onclick="deleteByID('${article['id']}')">Delete</button>
     % else:
         <button onclick="deleteByIdx(${loop.index})">Delete</button>
     % endif

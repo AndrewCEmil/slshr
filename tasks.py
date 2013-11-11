@@ -94,6 +94,7 @@ def edit_view(request):
             request.session.flash('Please enter a valid article')
             return HTTPFound(location=request.current_route_url())
         else:
+            #add the article in for displaying to user without a full reload
             articles.insert(0,new_user_article)
     logger.debug('returning from edit')
     return {'name': username, 'articles': articles, "loggedin": True, "userfollows": True, "listname": "edit"}
@@ -146,8 +147,8 @@ def unfollow_reqeust(request):
 
 #TODO how to make this more secure?
 #deletes an entry from a users list
-@view_config(route_name="deletereq", request_method="POST")
-def delete_req(request):
+@view_config(route_name="deleteid", request_method="POST")
+def delete_req_id(request):
     logger.info("got a delete id request")
     username = authenticated_userid(request)
     if username is None:
@@ -163,7 +164,7 @@ def delete_req(request):
 
 #TODO how to make this more secure?
 #deletes an entry from a users list
-@view_config(route_name="deleteidxreq", request_method="POST")
+@view_config(route_name="deleteidx", request_method="POST")
 def delete_req(request):
     logger.info("got a delete idx request")
     username = authenticated_userid(request)
