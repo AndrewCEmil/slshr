@@ -2,12 +2,13 @@
 <%inherit file="named.mako"/>
 
 <script>
-function deleteByID(id) {
+function deleteByID(id, idx) {
     $.post('/deleteid',
     { 'targetid': id },
     function(data) {
         alert(data);
     })
+    $('#article' + idx).remove() 
 }
 function deleteByIdx(idx) {
     $.post('/deleteidx',
@@ -15,6 +16,7 @@ function deleteByIdx(idx) {
     function(data) {
         alert(data)
     })
+    $('#article' + idx).remove() 
 }
 </script>
 
@@ -29,15 +31,15 @@ function deleteByIdx(idx) {
 <table class="table" id="articles">
 % if articles:
   % for article in articles:
-  <tr><td>
+  <tr id='article${loop.index}'><td>
     <a href="${article['url']}">${article['headline']}</a>
     % if "id" in article.keys():
-        <button onclick="deleteByID('${article['id']}')">Delete</button>
+        <button onclick="deleteByID('${article['id']}', ${loop.index})">Delete</button>
     % else:
         <button onclick="deleteByIdx(${loop.index})">Delete</button>
     % endif
       
-  </tr></td>
+  </td></tr>
   % endfor
 % else:
   <tr><td>There are no articles</tr></td>
